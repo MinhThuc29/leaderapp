@@ -1,0 +1,69 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
+import { ShieldAlert, Scale } from 'lucide-react';
+
+interface ManagementNavTabsProps {
+  title?: string;
+  description?: string;
+}
+
+export function ManagementNavTabs({
+  title,
+  description,
+}: ManagementNavTabsProps) {
+  const pathname = usePathname();
+  const { t } = useTranslation();
+
+  const displayTitle = title || t('management.title');
+  const displayDescription = description || t('management.risksDescription');
+
+  const tabs = [
+    {
+      href: '/management/risks',
+      label: t('management.navRisks'),
+      icon: ShieldAlert,
+      active: pathname.startsWith('/management/risks'),
+    },
+    {
+      href: '/management/decisions',
+      label: t('management.navDecisions'),
+      icon: Scale,
+      active: pathname.startsWith('/management/decisions'),
+    },
+  ];
+
+  return (
+    <div className="space-y-4 mb-6">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-white">{displayTitle}</h1>
+          <p className="mt-1 text-xs text-slate-400">{displayDescription}</p>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-slate-800 gap-1 overflow-x-auto pb-px">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-t-lg transition whitespace-nowrap border-b-2 ${
+                tab.active
+                  ? 'border-indigo-500 text-indigo-400 bg-slate-900/60'
+                  : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/30'
+              }`}
+            >
+              <Icon className={`h-4 w-4 ${tab.active ? 'text-indigo-400' : 'text-slate-400'}`} />
+              <span>{tab.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

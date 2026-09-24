@@ -1,0 +1,653 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==============================================================================
+// 15 Enums chuẩn từ spec.md §4
+// ==============================================================================
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  AT_RISK
+  COMPLETED
+  CANCELLED
+}
+
+enum ProgressMode {
+  MANUAL
+  AUTO
+}
+
+enum HealthStatus {
+  GREEN
+  YELLOW
+  RED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TaskStatus {
+  TODO
+  DOING
+  WAITING
+  DONE
+  CANCELLED
+}
+
+enum MilestoneStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  BLOCKED
+  COMPLETED
+  CANCELLED
+}
+
+enum WeeklyPlanStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+}
+
+enum FollowUpStatus {
+  WAITING
+  RESOLVED
+  CANCELLED
+}
+
+enum NoteType {
+  WORK
+  IDEA
+  TECHNICAL
+  MEETING
+  GENERAL
+}
+
+enum LearningStatus {
+  BACKLOG
+  LEARNING
+  PAUSED
+  COMPLETED
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum Probability {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum RiskStatus {
+  OPEN
+  MONITORING
+  MITIGATED
+  CLOSED
+}
+
+enum IncidentStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  CLOSED
+}
+
+enum DecisionStatus {
+  DECIDED
+  REVIEW_PENDING
+  REVIEWED
+}
+
+enum ReminderEntity {
+  TASK
+  FOLLOW_UP
+  PROJECT
+  MILESTONE
+  LEARNING
+  DECISION_REVIEW
+}
+
+// ==============================================================================
+// 1. users: Account Leader duy nhất (User = Leader)
+// ==============================================================================
+model User {
+  id            String    @id @default(uuid()) @db.Uuid
+  email         String    @unique
+  password_hash String
+  name          String
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  // Quan hệ sở hữu bản ghi nghiệp vụ (Leader ownership)
+  projects        Project[]
+  tasks           Task[]
+  weekly_plans    WeeklyPlan[]
+  notes           Note[]
+  lessons_learned LessonLearned[]
+  learning_items  LearningItem[]
+  follow_ups      FollowUp[]
+  reminders       Reminder[]
+  risks           Risk[]
+  incidents       Incident[]
+  decisions       Decision[]
+
+  @@map("users")
+}
+
+// ==============================================================================
+// 2. members: Thành viên team do Leader quản lý (User != Member, không có login)
+// ==============================================================================
+model Member {
+  id         String    @id @default(uuid()) @db.Uuid
+  name       String
+  nickname   String?
+  role       String
+  level      String?
+  email      String?
+  phone      String?
+  active     Boolean   @default(true)
+  notes      String?   @db.Text
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  // Quan hệ nghiệp vụ
+  project_members ProjectMember[]
+  tasks           Task[]
+  risks           Risk[]
+  notes_related   Note[]
+  follow_ups      FollowUp[]
+
+  @@map("members")
+}
+
+// ==============================================================================
+// 3. projects: Dự án
+// ==============================================================================
+model Project {
+  id              String        @id @default(uuid()) @db.Uuid
+  name            String
+  code            String        @unique
+  description     String?       @db.Text
+  status          ProjectStatus @default(PLANNING)
+  progress_mode   ProgressMode  @default(MANUAL)
+  manual_progress Int           @default(0)
+  start_date      DateTime?     @db.Date
+  target_date     DateTime?     @db.Date
+  completed_date  DateTime?     @db.Date
+  priority        Priority      @default(MEDIUM)
+  health_status   HealthStatus  @default(GREEN)
+  leader_note     String?       @db.Text
+  owner_id        String        @db.Uuid
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+  deleted_at      DateTime?
+
+  owner                      User                     @relation(fields: [owner_id], references: [id])
+  project_members            ProjectMember[]
+  project_progress_snapshots ProjectProgressSnapshot[]
+  milestones                 Milestone[]
+  tasks                      Task[]
+  weekly_plans               WeeklyPlan[]
+  risks                      Risk[]
+  incidents                  Incident[]
+  notes                      Note[]
+  lessons_learned            LessonLearned[]
+  decisions                  Decision[]
+  follow_ups                 FollowUp[]
+
+  @@map("projects")
+}
+
+// ==============================================================================
+// 4. project_members: Bảng nối project <-> member
+// ==============================================================================
+model ProjectMember {
+  id                 String    @id @default(uuid()) @db.Uuid
+  project_id         String    @db.Uuid
+  member_id          String    @db.Uuid
+  project_role       String
+  allocation_percent Int?
+  joined_at          DateTime  @db.Date
+  left_at            DateTime? @db.Date
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  member  Member  @relation(fields: [member_id], references: [id], onDelete: Cascade)
+
+  @@unique([project_id, member_id, joined_at])
+  @@map("project_members")
+}
+
+// ==============================================================================
+// 5. project_progress_snapshots: Lịch sử tiến độ dự án
+// ==============================================================================
+model ProjectProgressSnapshot {
+  id            String       @id @default(uuid()) @db.Uuid
+  project_id    String       @db.Uuid
+  progress      Int
+  mode          ProgressMode
+  health_status HealthStatus
+  note          String?      @db.Text
+  captured_at   DateTime     @default(now())
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map("project_progress_snapshots")
+}
+
+// ==============================================================================
+// 6. milestones: Mốc dự án
+// ==============================================================================
+model Milestone {
+  id             String          @id @default(uuid()) @db.Uuid
+  project_id     String          @db.Uuid
+  title          String
+  description    String?         @db.Text
+  status         MilestoneStatus @default(NOT_STARTED)
+  target_date    DateTime        @db.Date
+  completed_date DateTime?       @db.Date
+  progress       Int             @default(0)
+  order          Int             @default(0)
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
+  deleted_at     DateTime?
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  tasks   Task[]
+
+  @@map("milestones")
+}
+
+// ==============================================================================
+// 7. tasks: Công việc
+// ==============================================================================
+model Task {
+  id           String     @id @default(uuid()) @db.Uuid
+  title        String
+  description  String?    @db.Text
+  priority     Priority   @default(MEDIUM)
+  status       TaskStatus @default(TODO)
+  due_date     DateTime?  @db.Date
+  due_time     String?
+  weight       Int        @default(1)
+  completed_at DateTime?
+  project_id   String?    @db.Uuid
+  member_id    String?    @db.Uuid
+  milestone_id String?    @db.Uuid
+  owner_id     String     @db.Uuid
+  created_at   DateTime   @default(now())
+  updated_at   DateTime   @updatedAt
+  deleted_at   DateTime?
+
+  project             Project?            @relation(fields: [project_id], references: [id], onDelete: SetNull)
+  assignee            Member?             @relation(fields: [member_id], references: [id], onDelete: SetNull)
+  milestone           Milestone?          @relation(fields: [milestone_id], references: [id], onDelete: SetNull)
+  owner               User                @relation(fields: [owner_id], references: [id])
+  task_status_history TaskStatusHistory[]
+  weekly_plan_tasks   WeeklyPlanTask[]
+
+  @@map("tasks")
+}
+
+// ==============================================================================
+// 8. task_status_history: Lịch sử đổi trạng thái task
+// ==============================================================================
+model TaskStatusHistory {
+  id          String      @id @default(uuid()) @db.Uuid
+  task_id     String      @db.Uuid
+  from_status TaskStatus?
+  to_status   TaskStatus
+  note        String?     @db.Text
+  changed_at  DateTime    @default(now())
+
+  task Task @relation(fields: [task_id], references: [id], onDelete: Cascade)
+
+  @@map("task_status_history")
+}
+
+// ==============================================================================
+// 9. weekly_plans: Kế hoạch tuần theo dự án
+// ==============================================================================
+model WeeklyPlan {
+  id          String           @id @default(uuid()) @db.Uuid
+  project_id  String           @db.Uuid
+  week_number Int
+  year        Int
+  goal        String           @db.Text
+  status      WeeklyPlanStatus @default(ACTIVE)
+  start_date  DateTime         @db.Date
+  end_date    DateTime         @db.Date
+  owner_id    String           @db.Uuid
+  created_at  DateTime         @default(now())
+  updated_at  DateTime         @updatedAt
+
+  project           Project          @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  owner             User             @relation(fields: [owner_id], references: [id])
+  weekly_plan_tasks WeeklyPlanTask[]
+  weekly_review     WeeklyReview?
+
+  @@unique([project_id, year, week_number])
+  @@map("weekly_plans")
+}
+
+// ==============================================================================
+// 10. weekly_plan_tasks: Bảng nối weekly plan <-> task
+// ==============================================================================
+model WeeklyPlanTask {
+  id             String      @id @default(uuid()) @db.Uuid
+  weekly_plan_id String      @db.Uuid
+  task_id        String      @db.Uuid
+  planned_status TaskStatus?
+  result_status  TaskStatus?
+  carried_over   Boolean     @default(false)
+  created_at     DateTime    @default(now())
+  updated_at     DateTime    @updatedAt
+
+  weekly_plan WeeklyPlan @relation(fields: [weekly_plan_id], references: [id], onDelete: Cascade)
+  task        Task       @relation(fields: [task_id], references: [id], onDelete: Cascade)
+
+  @@unique([weekly_plan_id, task_id])
+  @@map("weekly_plan_tasks")
+}
+
+// ==============================================================================
+// 11. weekly_reviews: Kết quả review tuần (1-1 với weekly_plans)
+// ==============================================================================
+model WeeklyReview {
+  id              String   @id @default(uuid()) @db.Uuid
+  weekly_plan_id  String   @unique @db.Uuid
+  planned         Int      @default(0)
+  completed       Int      @default(0)
+  blocked         Int      @default(0)
+  carried_over    Int      @default(0)
+  completion_rate Decimal  @default(0) @db.Decimal(5, 2)
+  summary         String   @db.Text
+  achievements    String?  @db.Text
+  challenges      String?  @db.Text
+  improvements    String?  @db.Text
+  reviewed_at     DateTime @default(now())
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  weekly_plan WeeklyPlan @relation(fields: [weekly_plan_id], references: [id], onDelete: Cascade)
+
+  @@map("weekly_reviews")
+}
+
+// ==============================================================================
+// 12. notes: Ghi chú (gồm Quick Note)
+// ==============================================================================
+model Note {
+  id           String    @id @default(uuid()) @db.Uuid
+  title        String
+  content      String    @db.Text
+  type         NoteType  @default(GENERAL)
+  project_id   String?   @db.Uuid
+  member_id    String?   @db.Uuid
+  is_pinned    Boolean   @default(false)
+  source       String    @default("NORMAL")
+  converted_to String?
+  owner_id     String    @db.Uuid
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  deleted_at   DateTime?
+
+  project   Project?  @relation(fields: [project_id], references: [id], onDelete: SetNull)
+  member    Member?   @relation(fields: [member_id], references: [id], onDelete: SetNull)
+  owner     User      @relation(fields: [owner_id], references: [id])
+  note_tags NoteTag[]
+
+  @@map("notes")
+}
+
+// ==============================================================================
+// 13. tags: Từ khoá dùng chung
+// ==============================================================================
+model Tag {
+  id          String      @id @default(uuid()) @db.Uuid
+  name        String      @unique
+  color       String?
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt
+  note_tags   NoteTag[]
+  lesson_tags LessonTag[]
+
+  @@map("tags")
+}
+
+// ==============================================================================
+// 14. note_tags: Bảng nối note <-> tag
+// ==============================================================================
+model NoteTag {
+  id         String   @id @default(uuid()) @db.Uuid
+  note_id    String   @db.Uuid
+  tag_id     String   @db.Uuid
+  created_at DateTime @default(now())
+
+  note Note @relation(fields: [note_id], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+
+  @@unique([note_id, tag_id])
+  @@map("note_tags")
+}
+
+// ==============================================================================
+// 14b. lesson_tags: Bảng nối lesson_learned <-> tag
+// ==============================================================================
+model LessonTag {
+  id         String   @id @default(uuid()) @db.Uuid
+  lesson_id  String   @db.Uuid
+  tag_id     String   @db.Uuid
+  created_at DateTime @default(now())
+
+  lesson LessonLearned @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
+  tag    Tag           @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+
+  @@unique([lesson_id, tag_id])
+  @@map("lesson_tags")
+}
+
+// ==============================================================================
+// 15. lessons_learned: Bài học kinh nghiệm
+// ==============================================================================
+model LessonLearned {
+  id            String      @id @default(uuid()) @db.Uuid
+  title         String
+  project_id    String?     @db.Uuid
+  incident_id   String?     @db.Uuid
+  situation     String      @db.Text
+  problem       String      @db.Text
+  root_cause    String      @db.Text
+  lesson        String      @db.Text
+  future_action String      @db.Text
+  owner_id      String      @db.Uuid
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @updatedAt
+  deleted_at    DateTime?
+
+  project     Project?    @relation(fields: [project_id], references: [id], onDelete: SetNull)
+  incident    Incident?   @relation(fields: [incident_id], references: [id], onDelete: SetNull)
+  owner       User        @relation(fields: [owner_id], references: [id])
+  lesson_tags LessonTag[]
+
+  @@map("lessons_learned")
+}
+
+// ==============================================================================
+// 16. learning_items: Danh sách cần học
+// ==============================================================================
+model LearningItem {
+  id           String         @id @default(uuid()) @db.Uuid
+  title        String
+  category     String?
+  description  String?        @db.Text
+  priority     Priority       @default(MEDIUM)
+  status       LearningStatus @default(BACKLOG)
+  target_date  DateTime?      @db.Date
+  resource_url String?
+  notes        String?        @db.Text
+  owner_id     String         @db.Uuid
+  created_at   DateTime       @default(now())
+  updated_at   DateTime       @updatedAt
+  deleted_at   DateTime?
+
+  owner User @relation(fields: [owner_id], references: [id])
+
+  @@map("learning_items")
+}
+
+// ==============================================================================
+// 17. follow_ups: Việc đang chờ người/bên khác
+// ==============================================================================
+model FollowUp {
+  id             String         @id @default(uuid()) @db.Uuid
+  title          String
+  waiting_for    String
+  follow_up_date DateTime       @db.Date
+  status         FollowUpStatus @default(WAITING)
+  project_id     String?        @db.Uuid
+  member_id      String?        @db.Uuid
+  note           String?        @db.Text
+  owner_id       String         @db.Uuid
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @updatedAt
+  deleted_at     DateTime?
+
+  project Project? @relation(fields: [project_id], references: [id], onDelete: SetNull)
+  member  Member?  @relation(fields: [member_id], references: [id], onDelete: SetNull)
+  owner   User     @relation(fields: [owner_id], references: [id])
+
+  @@map("follow_ups")
+}
+
+// ==============================================================================
+// 18. reminders: Nhắc việc
+// ==============================================================================
+model Reminder {
+  id          String         @id @default(uuid()) @db.Uuid
+  title       String
+  remind_at   DateTime
+  recurrence  String         @default("NONE")
+  entity_type ReminderEntity
+  entity_id   String?        @db.Uuid
+  is_done     Boolean        @default(false)
+  owner_id    String         @db.Uuid
+  created_at  DateTime       @default(now())
+  updated_at  DateTime       @updatedAt
+
+  owner User @relation(fields: [owner_id], references: [id])
+
+  @@map("reminders")
+}
+
+// ==============================================================================
+// 19. risks: Rủi ro dự án
+// ==============================================================================
+model Risk {
+  id              String      @id @default(uuid()) @db.Uuid
+  project_id      String      @db.Uuid
+  title           String
+  description     String      @db.Text
+  severity        Severity    @default(MEDIUM)
+  probability     Probability @default(MEDIUM)
+  status          RiskStatus  @default(OPEN)
+  owner_member_id String?     @db.Uuid
+  mitigation      String      @db.Text
+  due_date        DateTime?   @db.Date
+  owner_id        String      @db.Uuid
+  created_at      DateTime    @default(now())
+  updated_at      DateTime    @updatedAt
+  deleted_at      DateTime?
+
+  project      Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  owner_member Member? @relation(fields: [owner_member_id], references: [id], onDelete: SetNull)
+  owner        User    @relation(fields: [owner_id], references: [id])
+
+  @@map("risks")
+}
+
+// ==============================================================================
+// 20. incidents: Sự cố dự án
+// ==============================================================================
+model Incident {
+  id          String         @id @default(uuid()) @db.Uuid
+  project_id  String         @db.Uuid
+  title       String
+  description String         @db.Text
+  severity    Severity       @default(HIGH)
+  status      IncidentStatus @default(OPEN)
+  detected_at DateTime       @default(now())
+  resolved_at DateTime?
+  root_cause  String?        @db.Text
+  solution    String?        @db.Text
+  prevention  String?        @db.Text
+  owner_id    String         @db.Uuid
+  created_at  DateTime       @default(now())
+  updated_at  DateTime       @updatedAt
+  deleted_at  DateTime?
+
+  project         Project         @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  owner           User            @relation(fields: [owner_id], references: [id])
+  lessons_learned LessonLearned[]
+
+  @@map("incidents")
+}
+
+// ==============================================================================
+// 21. decisions: Sổ quyết định quản trị
+// ==============================================================================
+model Decision {
+  id                 String         @id @default(uuid()) @db.Uuid
+  title              String
+  project_id         String?        @db.Uuid
+  context            String         @db.Text
+  options_considered String         @db.Text
+  decision           String         @db.Text
+  reason             String         @db.Text
+  expected_result    String         @db.Text
+  actual_result      String?        @db.Text
+  decision_date      DateTime       @db.Date
+  review_date        DateTime?      @db.Date
+  status             DecisionStatus @default(DECIDED)
+  owner_id           String         @db.Uuid
+  created_at         DateTime       @default(now())
+  updated_at         DateTime       @updatedAt
+  deleted_at         DateTime?
+
+  project Project? @relation(fields: [project_id], references: [id], onDelete: SetNull)
+  owner   User     @relation(fields: [owner_id], references: [id])
+
+  @@map("decisions")
+}
+
+// ==============================================================================
+// SystemHealth Model (Technical Foundation)
+// ==============================================================================
+model SystemHealth {
+  id         String    @id @default(uuid()) @db.Uuid
+  key        String    @unique
+  value      String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@map("system_health")
+}

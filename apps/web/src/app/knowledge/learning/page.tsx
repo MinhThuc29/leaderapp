@@ -576,11 +576,16 @@ function LearningContent() {
 
       {/* CREATE / EDIT MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl flex flex-col max-h-[92vh]">
-            <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
-              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-                <GraduationCap className="h-4 w-4 text-indigo-400" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 dark:bg-black/80 p-4 backdrop-blur-sm animate-in fade-in duration-150">
+          <div
+            className="fixed inset-0"
+            onClick={() => setIsModalOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="relative w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl flex flex-col max-h-[92vh] z-10">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-6 py-4">
+              <h2 className="text-base font-bold text-slate-900 dark:text-foreground flex items-center gap-2">
+                <GraduationCap className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
                 <span>
                   {editingItem
                     ? t('knowledge.learningPage.modalEditTitle')
@@ -590,7 +595,7 @@ function LearningContent() {
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-foreground"
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-foreground transition"
               >
                 <X className="h-5 w-5" />
               </button>

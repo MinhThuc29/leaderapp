@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import { RouteGuard } from '@/components/auth/route-guard';
 import { AppSidebar } from './app-sidebar';
 import { TopHeader } from './top-header';
+import { ChatbotWidget } from '@/components/ai/chatbot-widget';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -21,6 +22,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           </main>
         </div>
       </div>
+      <ChatbotWidget />
     </RouteGuard>
   );
 }

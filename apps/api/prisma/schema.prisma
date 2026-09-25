@@ -131,6 +131,10 @@ model User {
   email         String    @unique
   password_hash String
   name          String
+  avatar_url    String?   @db.Text
+  title         String?
+  phone         String?
+  bio           String?   @db.Text
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
 

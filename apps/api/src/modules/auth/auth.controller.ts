@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   Res,
   UseGuards,
@@ -13,6 +14,8 @@ import { Response } from 'express';
 import { AuthUser, LoginResponse } from '@leaderos/shared-types';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { AuthGuard } from './guards/auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 
@@ -67,7 +70,34 @@ export class AuthController {
   @ApiOperation({ summary: 'Lấy thông tin Leader hiện tại đang đăng nhập' })
   @ApiResponse({ status: 200, description: 'Thông tin tài khoản Leader' })
   @ApiResponse({ status: 401, description: 'Chưa xác thực hoặc token hết hạn' })
-  getProfile(@CurrentUser() user: AuthUser): { user: AuthUser } {
-    return { user };
+  async getProfile(@CurrentUser() user: AuthUser): Promise<{ user: AuthUser }> {
+    const freshUser = await this.authService.validateUser(user.id);
+    return { user: freshUser };
+  }
+
+  @Patch('profile')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Cập nhật thông tin cá nhân và ảnh đại diện' })
+  @ApiResponse({ status: 200, description: 'Cập nhật thông tin thành công' })
+  @ApiResponse({ status: 400, description: 'Dữ liệu không hợp lệ hoặc email trùng' })
+  async updateProfile(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: UpdateProfileDto,
+  ): Promise<{ user: AuthUser; message: string }> {
+    const updatedUser = await this.authService.updateProfile(user.id, dto);
+    return { user: updatedUser, message: 'Cập nhật thông tin cá nhân thành công' };
+  }
+
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Đổi mật khẩu tài khoản' })
+  @ApiResponse({ status: 200, description: 'Đổi mật khẩu thành công' })
+  @ApiResponse({ status: 400, description: 'Mật khẩu hiện tại không chính xác' })
+  async changePassword(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    return this.authService.changePassword(user.id, dto);
   }
 }

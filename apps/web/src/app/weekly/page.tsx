@@ -730,16 +730,21 @@ function WeeklyContent() {
       {/* Modal: Create or Edit Plan */}
       {/* ========================================================================= */}
       {showCreatePlanModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-              <h2 className="text-lg font-bold text-foreground">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 dark:bg-black/80 p-4 backdrop-blur-sm animate-in fade-in duration-150">
+          <div
+            className="fixed inset-0"
+            onClick={() => setShowCreatePlanModal(false)}
+            aria-hidden="true"
+          />
+          <div className="relative w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl z-10">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-foreground">
                 {editingPlan ? t('weekly.modalEditTitle') : t('weekly.modalCreateTitle')}
               </h2>
               <button
                 type="button"
                 onClick={() => setShowCreatePlanModal(false)}
-                className="text-slate-400 hover:text-foreground"
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-foreground transition"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -845,14 +850,19 @@ function WeeklyContent() {
       {/* Modal: Assign Tasks to Plan */}
       {/* ========================================================================= */}
       {assigningTaskPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 dark:bg-black/80 p-4 backdrop-blur-sm animate-in fade-in duration-150">
+          <div
+            className="fixed inset-0"
+            onClick={() => setAssigningTaskPlan(null)}
+            aria-hidden="true"
+          />
+          <div className="relative w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl z-10">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
               <div>
-                <h2 className="text-lg font-bold text-foreground">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-foreground">
                   {t('weekly.assignModalTitle')}
                 </h2>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {t('weekly.assignModalProject', {
                     code: assigningTaskPlan.project_code,
                     name: assigningTaskPlan.project_name,
@@ -862,7 +872,7 @@ function WeeklyContent() {
               <button
                 type="button"
                 onClick={() => setAssigningTaskPlan(null)}
-                className="text-slate-400 hover:text-foreground"
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-foreground transition"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -943,14 +953,19 @@ function WeeklyContent() {
       {/* Modal: Weekly Review */}
       {/* ========================================================================= */}
       {reviewingPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 dark:bg-black/80 p-4 backdrop-blur-sm animate-in fade-in duration-150">
+          <div
+            className="fixed inset-0"
+            onClick={() => setReviewingPlan(null)}
+            aria-hidden="true"
+          />
+          <div className="relative w-full max-w-xl rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl z-10">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
               <div>
-                <h2 className="text-lg font-bold text-foreground">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-foreground">
                   {t('weekly.reviewModalTitle')}
                 </h2>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {t('weekly.reviewModalMeta', {
                     code: reviewingPlan.project_code,
                     name: reviewingPlan.project_name,
@@ -962,7 +977,7 @@ function WeeklyContent() {
               <button
                 type="button"
                 onClick={() => setReviewingPlan(null)}
-                className="text-slate-400 hover:text-foreground"
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-foreground transition"
               >
                 <X className="h-5 w-5" />
               </button>

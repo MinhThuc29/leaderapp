@@ -1,5 +1,20 @@
 import type { Config } from 'tailwindcss';
 
+/** Các bậc màu được remap sang CSS variable để đảo thang theo theme. */
+const HUE_STOPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const;
+
+/**
+ * Trả về thang màu trỏ vào CSS variable `--<hue>-<stop>`, cùng nguyên tắc với
+ * `slate-*`: giá trị thực khai báo trong globals.css và đảo theo light/dark.
+ * Nhờ vậy `text-amber-400` tự động thành tông đậm ở light mode mà không cần
+ * sửa class trong từng trang (xem globals.css §"Hue scales").
+ */
+function hueScale(hue: string): Record<string, string> {
+  return Object.fromEntries(
+    HUE_STOPS.map((stop) => [stop, `hsl(var(--${hue}-${stop}) / <alpha-value>)`]),
+  );
+}
+
 const config: Config = {
   darkMode: ['class'],
   content: [
@@ -25,6 +40,18 @@ const config: Config = {
           900: 'hsl(var(--slate-900) / <alpha-value>)',
           950: 'hsl(var(--slate-950) / <alpha-value>)',
         },
+        red: hueScale('red'),
+        rose: hueScale('rose'),
+        orange: hueScale('orange'),
+        amber: hueScale('amber'),
+        emerald: hueScale('emerald'),
+        teal: hueScale('teal'),
+        indigo: hueScale('indigo'),
+        violet: hueScale('violet'),
+        purple: hueScale('purple'),
+        blue: hueScale('blue'),
+        sky: hueScale('sky'),
+        cyan: hueScale('cyan'),
         brand: {
           DEFAULT: 'hsl(var(--brand) / <alpha-value>)',
           fg: 'hsl(var(--brand-fg) / <alpha-value>)',

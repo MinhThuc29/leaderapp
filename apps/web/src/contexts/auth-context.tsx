@@ -1,7 +1,13 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { AuthUser, LoginInput, LoginResponse } from '@leaderos/shared-types';
+import {
+  AuthUser,
+  LoginInput,
+  LoginResponse,
+  UpdateProfileInput,
+  ChangePasswordInput,
+} from '@leaderos/shared-types';
 import { apiClient } from '@/lib/api-client';
 
 interface AuthContextType {
@@ -11,6 +17,8 @@ interface AuthContextType {
   login: (credentials: LoginInput) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  updateProfile: (data: UpdateProfileInput) => Promise<AuthUser>;
+  changePassword: (data: ChangePasswordInput) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -53,6 +61,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateProfile = async (data: UpdateProfileInput): Promise<AuthUser> => {
+    const res = await apiClient<{ user: AuthUser; message: string }>('/auth/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+    setUser(res.data.user);
+    return res.data.user;
+  };
+
+  const changePassword = async (data: ChangePasswordInput): Promise<void> => {
+    await apiClient<{ message: string }>('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -62,6 +86,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         logout,
         refreshUser,
+        updateProfile,
+        changePassword,
       }}
     >
       {children}

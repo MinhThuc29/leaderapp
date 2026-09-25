@@ -33,8 +33,26 @@ export interface AuthUser {
   id: string;
   email: string;
   name: string;
+  avatar_url?: string | null;
+  title?: string | null;
+  phone?: string | null;
+  bio?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface UpdateProfileInput {
+  name?: string;
+  email?: string;
+  avatar_url?: string | null;
+  title?: string | null;
+  phone?: string | null;
+  bio?: string | null;
+}
+
+export interface ChangePasswordInput {
+  current_password: string;
+  new_password: string;
 }
 
 export interface LoginInput {

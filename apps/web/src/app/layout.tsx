@@ -4,6 +4,7 @@ import './globals.css';
 
 import { AuthProvider } from '@/contexts/auth-context';
 import { I18nProvider } from '@/contexts/i18n-context';
+import { SidebarProvider } from '@/contexts/sidebar-context';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 
 // UI font: thiết kế riêng cho tiếng Việt, dấu cân ở size nhỏ của compact table
@@ -42,7 +43,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <I18nProvider>
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider>
+              <SidebarProvider>{children}</SidebarProvider>
+            </AuthProvider>
           </I18nProvider>
         </ThemeProvider>
       </body>

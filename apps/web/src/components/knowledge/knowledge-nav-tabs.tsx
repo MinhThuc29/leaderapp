@@ -45,7 +45,7 @@ export function KnowledgeNavTabs({
     <div className="space-y-4 mb-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">{displayTitle}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{displayTitle}</h1>
           <p className="mt-1 text-xs text-slate-400">{displayDescription}</p>
         </div>
       </div>

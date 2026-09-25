@@ -27,7 +27,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      setError('Vui lòng nhập đầy đủ Email và Mật khẩu');
+      setError(t('auth.validationError'));
       return;
     }
 
@@ -69,7 +69,7 @@ export default function LoginPage() {
             className={`px-2.5 py-1 rounded-lg text-xs font-medium transition ${
               language === l.code
                 ? 'bg-indigo-600 text-white font-semibold'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                : 'text-slate-400 hover:text-foreground hover:bg-slate-800'
             }`}
           >
             {l.flag} {l.label}
@@ -82,7 +82,7 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-bold text-xl mb-3">
             L
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">{t('auth.loginTitle')}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('auth.loginTitle')}</h1>
           <p className="text-sm text-slate-400 mt-1">{t('auth.loginSubtitle')}</p>
         </div>
 
@@ -137,7 +137,7 @@ export default function LoginPage() {
             onClick={handleFillDefaultCredentials}
             className="text-xs text-indigo-400 hover:text-indigo-300 transition underline underline-offset-4"
           >
-            Sử dụng tài khoản Leader mặc định (Seed)
+            {t('auth.fillDefault')}
           </button>
           <div className="text-xs text-slate-500 mt-2">
             admin@leaderos.local · LeaderOS@2026!

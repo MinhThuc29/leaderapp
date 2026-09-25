@@ -13,8 +13,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 243 75% 59%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -25,24 +25,76 @@
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 74% 42%;
+    --destructive-foreground: 0 0% 100%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 243 75% 59%;
 
     --radius: 0.5rem;
 
-    /* Light Theme Slate Variable Mappings */
+    /* ===================================================================== */
+    /* Semantic status tokens — LIGHT                                        */
+    /* Mỗi trạng thái có 4 vai trò:                                          */
+    /*   <name>        : màu đặc, dùng cho dot / progress bar / icon nhấn     */
+    /*   <name>-fg     : màu chữ, đặt trên <name>-bg                          */
+    /*   <name>-bg     : nền tint nhạt của chip / callout                     */
+    /*   <name>-border : viền của chip / callout                              */
+    /* ===================================================================== */
+
+    /* Brand / neutral-info (indigo) */
+    --brand: 243 75% 59%;
+    --brand-fg: 245 58% 51%;
+    --brand-bg: 226 100% 97%;
+    --brand-border: 228 96% 89%;
+
+    /* Success (emerald) */
+    --success: 160 84% 39%;
+    --success-fg: 163 94% 24%;
+    --success-bg: 152 81% 96%;
+    --success-border: 152 76% 80%;
+
+    /* Warning (amber) */
+    --warning: 38 92% 50%;
+    --warning-fg: 26 90% 37%;
+    --warning-bg: 48 100% 96%;
+    --warning-border: 48 97% 77%;
+
+    /* Danger (red) */
+    --danger: 0 84% 60%;
+    --danger-fg: 0 74% 42%;
+    --danger-bg: 0 86% 97%;
+    --danger-border: 0 96% 89%;
+
+    /* Critical — bậc cao nhất của severity, fill đặc để nổi hơn danger */
+    --critical: 0 74% 42%;
+    --critical-fg: 0 0% 100%;
+    --critical-bg: 0 74% 42%;
+    --critical-border: 0 70% 35%;
+
+    /* Info (blue) */
+    --info: 217 91% 60%;
+    --info-fg: 226 71% 48%;
+    --info-bg: 214 100% 97%;
+    --info-border: 213 97% 87%;
+
+    /* Neutral chip (trạng thái không mang sắc thái: ON_HOLD, CLOSED, LOW) */
+    --neutral: 215.4 16.3% 46.9%;
+    --neutral-fg: 215 25% 27%;
+    --neutral-bg: 210 40% 96.1%;
+    --neutral-border: 214.3 31.8% 91.4%;
+
+    /* Light Theme Slate Variable Mappings (thang đảo ngược — xem CLAUDE.md) */
     --slate-50: 222.2 84% 4.9%;
     --slate-100: 222.2 47.4% 11.2%;
-    --slate-200: 217.2 32.6% 17.5%;
-    --slate-300: 215 25% 27%;
+    --slate-200: 215 25% 27%;
+    --slate-300: 215 20% 35%;
     --slate-400: 215.4 16.3% 46.9%;
     --slate-500: 215.4 16.3% 46.9%;
     --slate-600: 215 20% 65%;
-    --slate-700: 215 25% 85%;
+    --slate-700: 214.3 31.8% 91.4%;
+    --slate-750: 210 40% 94%;
     --slate-800: 214.3 31.8% 91.4%;
     --slate-850: 210 40% 96.1%;
     --slate-900: 0 0% 100%;
@@ -53,13 +105,13 @@
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 222.2 47.4% 11.2%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 222.2 47.4% 11.2%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 217.2 91.2% 59.8%;
+    --primary: 234 89% 74%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -71,12 +123,52 @@
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 91% 71%;
+    --destructive-foreground: 222.2 47.4% 11.2%;
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --ring: 234 89% 74%;
+
+    /* ===================================================================== */
+    /* Semantic status tokens — DARK                                         */
+    /* ===================================================================== */
+
+    --brand: 239 84% 67%;
+    --brand-fg: 230 94% 82%;
+    --brand-bg: 244 47% 20%;
+    --brand-border: 244 55% 41%;
+
+    --success: 158 64% 52%;
+    --success-fg: 152 76% 80%;
+    --success-bg: 166 91% 9%;
+    --success-border: 163 88% 20%;
+
+    --warning: 43 96% 56%;
+    --warning-fg: 48 97% 77%;
+    --warning-bg: 28 86% 14%;
+    --warning-border: 23 83% 31%;
+
+    --danger: 0 91% 71%;
+    --danger-fg: 0 96% 89%;
+    --danger-bg: 0 75% 15%;
+    --danger-border: 0 70% 35%;
+
+    /* Critical — bậc cao nhất của severity, fill đặc để nổi hơn danger */
+    --critical: 0 91% 71%;
+    --critical-fg: 0 0% 100%;
+    --critical-bg: 0 72% 38%;
+    --critical-border: 0 84% 52%;
+
+    --info: 213 94% 68%;
+    --info-fg: 213 97% 87%;
+    --info-bg: 226 57% 21%;
+    --info-border: 226 71% 40%;
+
+    --neutral: 215 20.2% 65.1%;
+    --neutral-fg: 212.8 26.8% 83.9%;
+    --neutral-bg: 217.2 32.6% 17.5%;
+    --neutral-border: 215.3 25% 26.7%;
 
     /* Dark Theme Slate Variable Mappings (Standard Slate) */
     --slate-50: 210 40% 98%;
@@ -87,6 +179,7 @@
     --slate-500: 215.4 16.3% 46.9%;
     --slate-600: 215.4 16.3% 46.9%;
     --slate-700: 215.3 25% 26.7%;
+    --slate-750: 215 25% 22%;
     --slate-800: 217.2 32.6% 17.5%;
     --slate-850: 220 40% 13%;
     --slate-900: 222.2 47.4% 11.2%;
@@ -98,18 +191,22 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  /* In light mode, ensure header titles with text-white become readable dark headers */
-  html:not(.dark) h1.text-white,
-  html:not(.dark) h2.text-white,
-  html:not(.dark) h3.text-white,
-  html:not(.dark) h4.text-white,
-  html:not(.dark) h5.text-white,
-  html:not(.dark) h6.text-white {
-    color: hsl(var(--slate-100)) !important;
+  /* Số liệu trong bảng / thẻ chỉ số luôn thẳng cột */
+  .font-mono,
+  table td,
+  table th {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Focus state rõ ràng, đạt chuẩn accessibility (spec.md §8) */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 }

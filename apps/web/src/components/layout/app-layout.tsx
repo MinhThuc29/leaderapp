@@ -12,7 +12,7 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   return (
     <RouteGuard>
-      <div className="min-h-screen bg-slate-950 text-slate-100 transition-colors duration-150 flex flex-col md:flex-row">
+      <div className="min-h-screen bg-background text-foreground transition-colors duration-150 flex flex-col md:flex-row">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <TopHeader />

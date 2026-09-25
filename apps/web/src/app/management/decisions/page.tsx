@@ -26,10 +26,10 @@ import {
   FileCheck,
 } from 'lucide-react';
 
-const STATUS_MAP: Record<DecisionStatus, { label: string; badge: string }> = {
-  DECIDED: { label: 'Đã quyết định', badge: 'bg-blue-950 text-blue-400 border-blue-800' },
-  REVIEW_PENDING: { label: 'Cần đánh giá lại', badge: 'bg-amber-950 text-amber-400 border-amber-800 animate-pulse' },
-  REVIEWED: { label: 'Đã đánh giá', badge: 'bg-emerald-950 text-emerald-400 border-emerald-800' },
+const STATUS_MAP: Record<DecisionStatus, { badge: string }> = {
+  DECIDED: { badge: 'bg-blue-950 text-blue-400 border-blue-800' },
+  REVIEW_PENDING: { badge: 'bg-amber-950 text-amber-400 border-amber-800 animate-pulse' },
+  REVIEWED: { badge: 'bg-emerald-950 text-emerald-400 border-emerald-800' },
 };
 
 function formatDate(dateStr: string | null | undefined): string {
@@ -100,11 +100,11 @@ function DecisionsContent() {
       setProjects(projRes.data ?? []);
       setDecisions(decRes.data ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi khi tải nhật ký quyết định');
+      setError(err instanceof Error ? err.message : t('management.decisionsPage.loadError'));
     } finally {
       setLoading(false);
     }
-  }, [selectedProject]);
+  }, [selectedProject, t]);
 
   useEffect(() => {
     void loadData();
@@ -187,7 +187,7 @@ function DecisionsContent() {
   const handleDecisionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!decisionFormData.title?.trim() || !decisionFormData.context?.trim()) {
-      alert('Vui lòng nhập đầy đủ tiêu đề và bối cảnh quyết định');
+      alert(t('management.decisionsPage.validationError'));
       return;
     }
 
@@ -207,7 +207,7 @@ function DecisionsContent() {
       setIsDecisionModalOpen(false);
       await loadData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Lỗi khi lưu quyết định');
+      alert(err instanceof Error ? err.message : t('management.decisionsPage.saveError'));
     } finally {
       setFormSubmitting(false);
     }
@@ -218,7 +218,7 @@ function DecisionsContent() {
     e.preventDefault();
     if (!reviewingDecision) return;
     if (!reviewFormData.actual_result.trim()) {
-      alert('Vui lòng nhập kết quả thực tế đối chiếu');
+      alert(t('management.decisionsPage.reviewValidationError'));
       return;
     }
 
@@ -228,11 +228,11 @@ function DecisionsContent() {
         method: 'POST',
         body: JSON.stringify(reviewFormData),
       });
-      alert('Đã ghi nhận kết quả đánh giá quyết định thành công!');
+      alert(t('management.decisionsPage.reviewSuccess'));
       setIsReviewModalOpen(false);
       await loadData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Lỗi khi lưu đánh giá');
+      alert(err instanceof Error ? err.message : t('management.decisionsPage.reviewSaveError'));
     } finally {
       setFormSubmitting(false);
     }
@@ -245,7 +245,7 @@ function DecisionsContent() {
       await apiClient(`/decisions/${id}`, { method: 'DELETE' });
       await loadData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Lỗi khi xóa quyết định');
+      alert(err instanceof Error ? err.message : t('management.decisionsPage.deleteError'));
     }
   };
 
@@ -263,43 +263,43 @@ function DecisionsContent() {
       {/* Top Stat Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
-          <span className="text-xs text-slate-400 block font-medium">Tổng số quyết định</span>
+          <span className="text-xs text-slate-400 block font-medium">{t('management.decisionsPage.statTotal')}</span>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-white">{decisions.length}</span>
-            <span className="text-xs text-slate-500">mục</span>
+            <span className="text-2xl font-bold font-mono text-foreground">{decisions.length}</span>
+            <span className="text-xs text-slate-500">{t('management.decisionsPage.statTotalUnit')}</span>
           </div>
         </div>
 
         <div className="rounded-2xl border border-blue-900/60 bg-blue-950/20 p-4">
           <span className="text-xs text-blue-300 block font-medium flex items-center gap-1.5">
             <Clock className="h-3.5 w-3.5 text-blue-400" />
-            Đang thực thi (Decided)
+            {t('management.decisionsPage.statDecided')}
           </span>
           <div className="mt-1 flex items-baseline gap-2">
             <span className="text-2xl font-bold font-mono text-blue-400">{decidedCount}</span>
-            <span className="text-xs text-blue-300/70">quyết định</span>
+            <span className="text-xs text-blue-300/70">{t('management.decisionsPage.statDecidedUnit')}</span>
           </div>
         </div>
 
         <div className="rounded-2xl border border-amber-900/60 bg-amber-950/20 p-4">
           <span className="text-xs text-amber-300 block font-medium flex items-center gap-1.5">
             <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
-            Cần đánh giá lại (Review Pending)
+            {t('management.decisionsPage.statReviewPending')}
           </span>
           <div className="mt-1 flex items-baseline gap-2">
             <span className="text-2xl font-bold font-mono text-amber-400">{reviewPendingCount}</span>
-            <span className="text-xs text-amber-300/70">đã tới hạn</span>
+            <span className="text-xs text-amber-300/70">{t('management.decisionsPage.statReviewPendingUnit')}</span>
           </div>
         </div>
 
         <div className="rounded-2xl border border-emerald-900/60 bg-emerald-950/20 p-4">
           <span className="text-xs text-emerald-300 block font-medium flex items-center gap-1.5">
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-            Đã đánh giá kết quả (Reviewed)
+            {t('management.decisionsPage.statReviewed')}
           </span>
           <div className="mt-1 flex items-baseline gap-2">
             <span className="text-2xl font-bold font-mono text-emerald-400">{reviewedCount}</span>
-            <span className="text-xs text-emerald-300/70">hoàn tất</span>
+            <span className="text-xs text-emerald-300/70">{t('management.decisionsPage.statReviewedUnit')}</span>
           </div>
         </div>
       </div>
@@ -314,10 +314,10 @@ function DecisionsContent() {
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
               selectedStatus === ''
                 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
-                : 'bg-slate-900 text-slate-400 hover:text-white'
+                : 'bg-slate-900 text-slate-400 hover:text-foreground'
             }`}
           >
-            Tất cả ({decisions.length})
+            {t('common.allCount', { count: decisions.length })}
           </button>
           {(['DECIDED', 'REVIEW_PENDING', 'REVIEWED'] as DecisionStatus[]).map((st) => (
             <button
@@ -327,10 +327,11 @@ function DecisionsContent() {
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
                 selectedStatus === st
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
-                  : 'bg-slate-900 text-slate-400 hover:text-white'
+                  : 'bg-slate-900 text-slate-400 hover:text-foreground'
               }`}
             >
-              {STATUS_MAP[st].label} ({decisions.filter((d) => d.status === st).length})
+              {t(`management.decisionStatuses.${st}`)} (
+              {decisions.filter((d) => d.status === st).length})
             </button>
           ))}
         </div>
@@ -341,7 +342,7 @@ function DecisionsContent() {
             onChange={(e) => setSelectedProject(e.target.value)}
             className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-medium text-slate-200 focus:border-indigo-500 focus:outline-none"
           >
-            <option value="">Tất cả dự án</option>
+            <option value="">{t('common.allProjects')}</option>
             {projects.map((p) => (
               <option key={p.id} value={p.id}>
                 [{p.code}] {p.name}
@@ -353,7 +354,7 @@ function DecisionsContent() {
             <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
             <input
               type="text"
-              placeholder="Tìm quyết định..."
+              placeholder={t('management.decisionsPage.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-48 sm:w-56 rounded-xl border border-slate-800 bg-slate-950 pl-8 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -366,7 +367,7 @@ function DecisionsContent() {
             className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-indigo-500 shadow-md shadow-indigo-500/20 transition whitespace-nowrap"
           >
             <Plus className="h-4 w-4" />
-            <span>Ghi nhận Quyết định</span>
+            <span>{t('management.decisionsPage.newDecisionButton')}</span>
           </button>
         </div>
       </div>
@@ -375,10 +376,10 @@ function DecisionsContent() {
       {/* DECISION LOG TIMELINE VIEW */}
       {/* ========================================================================= */}
       {loading ? (
-        <div className="text-center py-16 text-slate-500 text-xs">Đang tải nhật ký quyết định...</div>
+        <div className="text-center py-16 text-slate-500 text-xs">{t('management.decisionsPage.loading')}</div>
       ) : filteredDecisions.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-800 p-12 text-center text-xs text-slate-500">
-          Chưa có quyết định nào trong nhật ký. Nhấp "Ghi nhận Quyết định" để bắt đầu ghi lại các quyết định quan trọng.
+          {t('management.decisionsPage.emptyState')}
         </div>
       ) : (
         <div className="relative pl-6 sm:pl-8 space-y-8 before:absolute before:left-3 sm:before:left-4 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-800">
@@ -433,11 +434,11 @@ function DecisionsContent() {
                             STATUS_MAP[dec.status].badge
                           }`}
                         >
-                          {STATUS_MAP[dec.status].label}
+                          {t(`management.decisionStatuses.${dec.status}`)}
                         </span>
                       </div>
 
-                      <h3 className="text-lg font-bold text-white leading-snug">
+                      <h3 className="text-lg font-bold text-foreground leading-snug">
                         {dec.title}
                       </h3>
                     </div>
@@ -449,18 +450,18 @@ function DecisionsContent() {
                           type="button"
                           onClick={() => openReviewModal(dec)}
                           className="inline-flex items-center gap-1.5 rounded-xl border border-amber-800/80 bg-amber-950/50 px-3 py-1.5 text-xs font-semibold text-amber-300 hover:bg-amber-900/70 transition"
-                          title="Đánh giá lại kết quả sau 3-6 tháng"
+                          title={t('management.decisionsPage.reviewButtonTitle')}
                         >
                           <FileCheck className="h-3.5 w-3.5 text-amber-400" />
-                          <span>Đánh giá kết quả</span>
+                          <span>{t('management.decisionsPage.reviewButton')}</span>
                         </button>
                       )}
 
                       <button
                         type="button"
                         onClick={() => openEditModal(dec)}
-                        className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:text-white transition"
-                        title="Chỉnh sửa quyết định"
+                        className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:text-foreground transition"
+                        title={t('management.decisionsPage.editTitle')}
                       >
                         <Edit2 className="h-3.5 w-3.5" />
                       </button>
@@ -468,7 +469,7 @@ function DecisionsContent() {
                         type="button"
                         onClick={() => void handleDeleteDecision(dec.id)}
                         className="p-1.5 rounded-lg border border-red-950 bg-red-950/30 text-red-400 hover:bg-red-900/50 transition"
-                        title="Xóa quyết định"
+                        title={t('management.decisionsPage.deleteTitle')}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -479,7 +480,7 @@ function DecisionsContent() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div className="rounded-xl border border-slate-800 bg-slate-950 p-3.5 space-y-1">
                       <strong className="text-slate-400 block text-[11px] uppercase tracking-wider font-bold">
-                        Bối cảnh ra quyết định (Context):
+                        {t('management.decisionsPage.contextLabel')}
                       </strong>
                       <p className="text-slate-300 leading-relaxed whitespace-pre-line">
                         {dec.context}
@@ -488,7 +489,7 @@ function DecisionsContent() {
 
                     <div className="rounded-xl border border-slate-800 bg-slate-950 p-3.5 space-y-1">
                       <strong className="text-slate-400 block text-[11px] uppercase tracking-wider font-bold">
-                        Các phương án đã cân nhắc (Options considered):
+                        {t('management.decisionsPage.optionsLabel')}
                       </strong>
                       <p className="text-slate-300 leading-relaxed whitespace-pre-line">
                         {dec.options_considered}
@@ -501,22 +502,26 @@ function DecisionsContent() {
                     <div className="flex items-center gap-2">
                       <Award className="h-4 w-4 text-indigo-400" />
                       <strong className="text-indigo-300 text-xs font-bold uppercase tracking-wider">
-                        Quyết định được chọn:
+                        {t('management.decisionsPage.chosenLabel')}
                       </strong>
                     </div>
 
-                    <p className="text-sm font-semibold text-white leading-relaxed">
+                    <p className="text-sm font-semibold text-foreground leading-relaxed">
                       {dec.decision}
                     </p>
 
                     <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs border-t border-indigo-900/40 mt-2">
                       <div>
-                        <span className="text-slate-400 font-semibold block mb-0.5">Lý do chọn (Rationale):</span>
+                        <span className="text-slate-400 font-semibold block mb-0.5">
+                          {t('management.decisionsPage.rationaleLabel')}
+                        </span>
                         <p className="text-slate-300 leading-relaxed">{dec.reason}</p>
                       </div>
 
                       <div>
-                        <span className="text-slate-400 font-semibold block mb-0.5">Kỳ vọng ban đầu (Expected outcome):</span>
+                        <span className="text-slate-400 font-semibold block mb-0.5">
+                          {t('management.decisionsPage.expectedLabel')}
+                        </span>
                         <p className="text-slate-300 leading-relaxed">{dec.expected_result}</p>
                       </div>
                     </div>
@@ -529,12 +534,14 @@ function DecisionsContent() {
                         <div className="flex items-center gap-2">
                           <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                           <strong className="text-emerald-300 font-bold uppercase tracking-wider text-[11px]">
-                            Kết quả đối chiếu thực tế sau 3-6 tháng:
+                            {t('management.decisionsPage.actualResultLabel')}
                           </strong>
                         </div>
                         {dec.review_date && (
                           <span className="text-slate-400 text-[11px]">
-                            Đánh giá lúc: {formatDate(dec.review_date)}
+                            {t('management.decisionsPage.reviewedAt', {
+                              date: formatDate(dec.review_date),
+                            })}
                           </span>
                         )}
                       </div>
@@ -548,10 +555,12 @@ function DecisionsContent() {
                         <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0" />
                         <div>
                           <strong className="text-amber-300 font-semibold block">
-                            Đã đến hạn đánh giá lại quyết định!
+                            {t('management.decisionsPage.reviewDueAlert')}
                           </strong>
                           <p className="text-slate-400 text-[11px] mt-0.5">
-                            Hạn đánh giá định kỳ: {formatDate(dec.review_date)}. Hãy đối chiếu kết quả thực tế để đúc kết kinh nghiệm.
+                            {t('management.decisionsPage.reviewDueDesc', {
+                              date: formatDate(dec.review_date),
+                            })}
                           </p>
                         </div>
                       </div>
@@ -561,13 +570,18 @@ function DecisionsContent() {
                         onClick={() => openReviewModal(dec)}
                         className="rounded-xl bg-amber-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-amber-500 shadow-md transition whitespace-nowrap self-end sm:self-center"
                       >
-                        Đánh giá ngay
+                        {t('management.decisionsPage.reviewNow')}
                       </button>
                     </div>
                   ) : dec.review_date ? (
                     <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
-                      <span>Lịch hẹn đánh giá lại kết quả: <strong className="text-slate-400">{formatDate(dec.review_date)}</strong></span>
-                      <span className="italic text-[11px]">(Định kỳ 3-6 tháng)</span>
+                      <span>
+                        {t('management.decisionsPage.reviewScheduleLabel')}{' '}
+                        <strong className="text-slate-400">{formatDate(dec.review_date)}</strong>
+                      </span>
+                      <span className="italic text-[11px]">
+                        {t('management.decisionsPage.reviewPeriodHint')}
+                      </span>
                     </div>
                   ) : null}
                 </div>
@@ -583,18 +597,22 @@ function DecisionsContent() {
       <Modal
         isOpen={isDecisionModalOpen}
         onClose={() => setIsDecisionModalOpen(false)}
-        title={editingDecision ? 'Chỉnh sửa Quyết định' : 'Ghi nhận Quyết định mới'}
-        description="Lưu lại bối cảnh, các lựa chọn và kỳ vọng để đánh giá lại sau 3-6 tháng."
+        title={
+          editingDecision
+            ? t('management.decisionsPage.modalEditTitle')
+            : t('management.decisionsPage.modalCreateTitle')
+        }
+        description={t('management.decisionsPage.modalDesc')}
         maxWidth="lg"
       >
         <form onSubmit={handleDecisionSubmit} className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-slate-300 block mb-1">
-              Tiêu đề quyết định <span className="text-red-400">*</span>
+              {t('management.decisionsPage.titleLabel')} <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
-              placeholder="VD: Chuyển đổi kiến trúc sang Monorepo với Turborepo"
+              placeholder={t('management.decisionsPage.titlePlaceholder')}
               value={decisionFormData.title}
               onChange={(e) => setDecisionFormData({ ...decisionFormData, title: e.target.value })}
               className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -605,14 +623,14 @@ function DecisionsContent() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-semibold text-slate-300 block mb-1">
-                Dự án liên quan (Tùy chọn)
+                {t('management.decisionsPage.projectLabel')}
               </label>
               <select
                 value={decisionFormData.project_id || ''}
                 onChange={(e) => setDecisionFormData({ ...decisionFormData, project_id: e.target.value })}
                 className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
               >
-                <option value="">Quyết định chung / Toàn team</option>
+                <option value="">{t('management.decisionsPage.generalDecision')}</option>
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>
                     [{p.code}] {p.name}
@@ -623,7 +641,7 @@ function DecisionsContent() {
 
             <div>
               <label className="text-xs font-semibold text-slate-300 block mb-1">
-                Ngày ra quyết định
+                {t('management.decisionsPage.decisionDateLabel')}
               </label>
               <input
                 type="date"
@@ -636,11 +654,11 @@ function DecisionsContent() {
 
           <div>
             <label className="text-xs font-semibold text-slate-300 block mb-1">
-              Bối cảnh ra quyết định (Context) <span className="text-red-400">*</span>
+              {t('management.decisionsPage.contextFieldLabel')} <span className="text-red-400">*</span>
             </label>
             <textarea
               rows={2}
-              placeholder="Tại sao cần đưa ra quyết định này? Vấn đề hoặc thách thức hiện tại là gì?..."
+              placeholder={t('management.decisionsPage.contextPlaceholder')}
               value={decisionFormData.context}
               onChange={(e) => setDecisionFormData({ ...decisionFormData, context: e.target.value })}
               className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -650,11 +668,11 @@ function DecisionsContent() {
 
           <div>
             <label className="text-xs font-semibold text-slate-300 block mb-1">
-              Các phương án đã cân nhắc (Options considered) <span className="text-red-400">*</span>
+              {t('management.decisionsPage.optionsFieldLabel')} <span className="text-red-400">*</span>
             </label>
             <textarea
               rows={3}
-              placeholder="Phương án A: ... (Ưu/Nhược)&#10;Phương án B: ... (Ưu/Nhược)"
+              placeholder={t('management.decisionsPage.optionsPlaceholder')}
               value={decisionFormData.options_considered}
               onChange={(e) => setDecisionFormData({ ...decisionFormData, options_considered: e.target.value })}
               className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -665,11 +683,11 @@ function DecisionsContent() {
           <div className="rounded-xl border border-indigo-900/60 bg-indigo-950/20 p-3.5 space-y-3">
             <div>
               <label className="text-xs font-semibold text-indigo-300 block mb-1">
-                Phương án được chọn (Chosen Decision)
+                {t('management.decisionsPage.chosenFieldLabel')}
               </label>
               <input
                 type="text"
-                placeholder="VD: Chọn phương án B: Áp dụng Monorepo với pnpm workspace"
+                placeholder={t('management.decisionsPage.chosenPlaceholder')}
                 value={decisionFormData.decision || ''}
                 onChange={(e) => setDecisionFormData({ ...decisionFormData, decision: e.target.value })}
                 className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -678,11 +696,11 @@ function DecisionsContent() {
 
             <div>
               <label className="text-xs font-semibold text-indigo-300 block mb-1">
-                Lý do lựa chọn (Rationale)
+                {t('management.decisionsPage.rationaleFieldLabel')}
               </label>
               <textarea
                 rows={2}
-                placeholder="Tại sao phương án này là tối ưu nhất ở thời điểm hiện tại?..."
+                placeholder={t('management.decisionsPage.rationalePlaceholder')}
                 value={decisionFormData.reason || ''}
                 onChange={(e) => setDecisionFormData({ ...decisionFormData, reason: e.target.value })}
                 className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -691,11 +709,11 @@ function DecisionsContent() {
 
             <div>
               <label className="text-xs font-semibold text-indigo-300 block mb-1">
-                Kỳ vọng ban đầu (Expected outcome)
+                {t('management.decisionsPage.expectedFieldLabel')}
               </label>
               <textarea
                 rows={2}
-                placeholder="Mục tiêu cụ thể kỳ vọng đạt được (VD: Tốc độ build CI giảm 50%, 0 lỗi lệch type)..."
+                placeholder={t('management.decisionsPage.expectedPlaceholder')}
                 value={decisionFormData.expected_result || ''}
                 onChange={(e) => setDecisionFormData({ ...decisionFormData, expected_result: e.target.value })}
                 className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -705,7 +723,7 @@ function DecisionsContent() {
 
           <div>
             <label className="text-xs font-semibold text-slate-300 block mb-1">
-              Ngày dự kiến đánh giá lại sau 3-6 tháng (Review Date)
+              {t('management.decisionsPage.reviewDateLabel')}
             </label>
             <input
               type="date"
@@ -721,14 +739,18 @@ function DecisionsContent() {
               onClick={() => setIsDecisionModalOpen(false)}
               className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-700"
             >
-              Hủy
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={formSubmitting}
               className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
             >
-              {formSubmitting ? 'Đang lưu...' : editingDecision ? 'Cập nhật Quyết định' : 'Lưu Quyết định'}
+              {formSubmitting
+                ? t('common.saving')
+                : editingDecision
+                  ? t('management.decisionsPage.updateDecision')
+                  : t('management.decisionsPage.saveDecision')}
             </button>
           </div>
         </form>
@@ -740,27 +762,31 @@ function DecisionsContent() {
       <Modal
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
-        title="Đánh giá lại kết quả Quyết định (Decision Review)"
-        description="Đối chiếu kết quả thực tế sau 3-6 tháng với kỳ vọng ban đầu."
+        title={t('management.decisionsPage.reviewModalTitle')}
+        description={t('management.decisionsPage.reviewModalDesc')}
         maxWidth="md"
       >
         <form onSubmit={handleReviewSubmit} className="space-y-4">
           <div className="rounded-xl border border-slate-800 bg-slate-950 p-3.5 space-y-2 text-xs">
-            <span className="text-slate-500 uppercase font-bold text-[11px] block">Quyết định:</span>
-            <h4 className="text-sm font-bold text-white">{reviewingDecision?.title}</h4>
+            <span className="text-slate-500 uppercase font-bold text-[11px] block">
+              {t('management.decisionsPage.reviewDecisionLabel')}
+            </span>
+            <h4 className="text-sm font-bold text-foreground">{reviewingDecision?.title}</h4>
             <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
-              <strong className="text-slate-400 block mb-0.5 text-[11px]">Kỳ vọng ban đầu:</strong>
+              <strong className="text-slate-400 block mb-0.5 text-[11px]">
+                {t('management.decisionsPage.reviewExpectedLabel')}
+              </strong>
               <p>{reviewingDecision?.expected_result}</p>
             </div>
           </div>
 
           <div>
             <label className="text-xs font-semibold text-emerald-300 block mb-1">
-              Kết quả thực tế sau 3-6 tháng (Actual Result) <span className="text-red-400">*</span>
+              {t('management.decisionsPage.actualResultFieldLabel')} <span className="text-red-400">*</span>
             </label>
             <textarea
               rows={4}
-              placeholder="Thực tế triển khai ra sao? Có đạt được kỳ vọng ban đầu không? Có phát sinh vấn đề gì mới?..."
+              placeholder={t('management.decisionsPage.actualResultPlaceholder')}
               value={reviewFormData.actual_result}
               onChange={(e) => setReviewFormData({ ...reviewFormData, actual_result: e.target.value })}
               className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -770,11 +796,11 @@ function DecisionsContent() {
 
           <div>
             <label className="text-xs font-semibold text-slate-300 block mb-1">
-              Ghi chú thêm hoặc bài học quản trị (Tùy chọn)
+              {t('management.decisionsPage.reviewNotesLabel')}
             </label>
             <textarea
               rows={2}
-              placeholder="Ghi chú thêm cho các quyết định tương lai..."
+              placeholder={t('management.decisionsPage.reviewNotesPlaceholder')}
               value={reviewFormData.notes || ''}
               onChange={(e) => setReviewFormData({ ...reviewFormData, notes: e.target.value })}
               className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -787,14 +813,14 @@ function DecisionsContent() {
               onClick={() => setIsReviewModalOpen(false)}
               className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-700"
             >
-              Hủy
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={formSubmitting}
               className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
             >
-              {formSubmitting ? 'Đang lưu...' : 'Xác nhận Đã Đánh Giá'}
+              {formSubmitting ? t('common.saving') : t('management.decisionsPage.reviewSubmit')}
             </button>
           </div>
         </form>

@@ -104,13 +104,13 @@ export function AppSidebar() {
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 font-bold text-white shadow-md shadow-indigo-500/20 text-xs">
             L
           </span>
-          <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white">LeaderOS</span>
+          <span className="text-base font-bold tracking-tight text-foreground">LeaderOS</span>
         </Link>
 
         <button
           type="button"
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-white transition"
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-foreground transition"
           aria-label="Toggle navigation menu"
         >
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -145,7 +145,7 @@ export function AppSidebar() {
                 L
               </span>
               <div>
-                <div className="text-base font-bold tracking-tight text-slate-900 dark:text-white leading-none flex items-center gap-1.5">
+                <div className="text-base font-bold tracking-tight text-foreground leading-none flex items-center gap-1.5">
                   LeaderOS
                   <Sparkles className="h-3 w-3 text-indigo-500 dark:text-indigo-400" />
                 </div>
@@ -159,7 +159,7 @@ export function AppSidebar() {
             <button
               type="button"
               onClick={() => setMobileOpen(false)}
-              className="md:hidden p-1 text-slate-400 hover:text-white"
+              className="md:hidden p-1 text-slate-400 hover:text-foreground"
             >
               <X className="h-5 w-5" />
             </button>

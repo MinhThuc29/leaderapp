@@ -84,11 +84,11 @@ function LessonsContent() {
       setLessons(resLessons.data);
       if (projects.length === 0) setProjects(resProjects.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi tải danh sách bài học kinh nghiệm');
+      setError(err instanceof Error ? err.message : t('knowledge.lessonsPage.loadError'));
     } finally {
       setLoading(false);
     }
-  }, [search, selectedProject, selectedTag, projects]);
+  }, [search, selectedProject, selectedTag, projects, t]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -101,7 +101,7 @@ function LessonsContent() {
   const allTags = useMemo(() => {
     const tagSet = new Set<string>();
     lessons.forEach((l) => {
-      l.tags?.forEach((t) => tagSet.add(t));
+      l.tags?.forEach((tag) => tagSet.add(tag));
     });
     return Array.from(tagSet).sort();
   }, [lessons]);
@@ -135,7 +135,7 @@ function LessonsContent() {
   const handleSaveLesson = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formTitle.trim() || !formProblem.trim() || !formRootCause.trim() || !formLesson.trim() || !formFutureAction.trim()) {
-      alert('Vui lòng điền đầy đủ các bước trong bài học kinh nghiệm');
+      alert(t('knowledge.lessonsPage.validationError'));
       return;
     }
 
@@ -143,7 +143,7 @@ function LessonsContent() {
       setSaving(true);
       const tagsArray = formTags
         .split(',')
-        .map((t) => t.trim())
+        .map((tag) => tag.trim())
         .filter(Boolean);
 
       if (editingLesson) {
@@ -181,19 +181,19 @@ function LessonsContent() {
       setIsModalOpen(false);
       void fetchLessons();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Lỗi khi lưu bài học');
+      alert(err instanceof Error ? err.message : t('knowledge.lessonsPage.saveError'));
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Bạn có chắc muốn xóa bài học kinh nghiệm "${title}"?`)) return;
+    if (!confirm(t('knowledge.lessonsPage.deleteConfirm', { title }))) return;
     try {
       await apiClient(`/lessons-learned/${id}`, { method: 'DELETE' });
       void fetchLessons();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Lỗi khi xóa bài học');
+      alert(err instanceof Error ? err.message : t('knowledge.lessonsPage.deleteError'));
     }
   };
 
@@ -207,7 +207,7 @@ function LessonsContent() {
             <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-500" />
             <input
               type="text"
-              placeholder="Tìm theo tiêu đề, nguyên nhân, bài học..."
+              placeholder={t('knowledge.lessonsPage.searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-lg border border-slate-800 bg-slate-950 py-1.5 pl-8 pr-3 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -220,7 +220,7 @@ function LessonsContent() {
             onChange={(e) => setSelectedProject(e.target.value)}
             className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-300 focus:border-indigo-500 focus:outline-none"
           >
-            <option value="ALL">Mọi dự án</option>
+            <option value="ALL">{t('common.allProjects')}</option>
             {projects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.code} - {p.name}
@@ -235,10 +235,10 @@ function LessonsContent() {
               onChange={(e) => setSelectedTag(e.target.value)}
               className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-300 focus:border-indigo-500 focus:outline-none"
             >
-              <option value="ALL">Mọi nhãn (Tags)</option>
-              {allTags.map((t) => (
-                <option key={t} value={t}>
-                  #{t}
+              <option value="ALL">{t('common.anyTag')}</option>
+              {allTags.map((tag) => (
+                <option key={tag} value={tag}>
+                  #{tag}
                 </option>
               ))}
             </select>
@@ -254,7 +254,7 @@ function LessonsContent() {
               }}
               className="text-[11px] text-slate-400 hover:text-indigo-400 transition underline underline-offset-4"
             >
-              Đặt lại
+              {t('common.reset')}
             </button>
           )}
         </div>
@@ -264,7 +264,7 @@ function LessonsContent() {
             type="button"
             onClick={() => void fetchLessons()}
             className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-950 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800 transition"
-            title="Làm mới"
+            title={t('common.refresh')}
           >
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin text-indigo-400' : ''}`} />
           </button>
@@ -275,7 +275,7 @@ function LessonsContent() {
             className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 transition"
           >
             <Plus className="h-4 w-4" />
-            <span>Bài học mới</span>
+            <span>{t('knowledge.lessonsPage.newLesson')}</span>
           </button>
         </div>
       </div>
@@ -283,7 +283,7 @@ function LessonsContent() {
       {/* ERROR NOTICE */}
       {error && (
         <div className="p-3 bg-red-950/50 border border-red-900 rounded-xl text-red-300 text-xs">
-          Lỗi: {error}
+          {t('common.errorPrefix', { message: error })}
         </div>
       )}
 
@@ -291,18 +291,18 @@ function LessonsContent() {
       <div className="hidden sm:flex items-center justify-between gap-2 rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-2 text-[11px] text-slate-400">
         <span className="font-semibold text-slate-300 flex items-center gap-1.5">
           <BookOpen className="h-3.5 w-3.5 text-indigo-400" />
-          Chuẩn cấu trúc 5 bước:
+          {t('knowledge.lessonsPage.structureHint')}
         </span>
         <div className="flex items-center gap-1.5 font-medium">
-          <span className="text-blue-400">1. Hoàn cảnh</span>
+          <span className="text-blue-400">{t('knowledge.lessonsPage.step1Short')}</span>
           <ArrowRight className="h-3 w-3 text-slate-600" />
-          <span className="text-amber-400">2. Vấn đề</span>
+          <span className="text-amber-400">{t('knowledge.lessonsPage.step2Short')}</span>
           <ArrowRight className="h-3 w-3 text-slate-600" />
-          <span className="text-rose-400">3. Nguyên nhân gốc rễ</span>
+          <span className="text-rose-400">{t('knowledge.lessonsPage.step3Short')}</span>
           <ArrowRight className="h-3 w-3 text-slate-600" />
-          <span className="text-emerald-400">4. Bài học</span>
+          <span className="text-emerald-400">{t('knowledge.lessonsPage.step4Short')}</span>
           <ArrowRight className="h-3 w-3 text-slate-600" />
-          <span className="text-indigo-400">5. Hành động tương lai</span>
+          <span className="text-indigo-400">{t('knowledge.lessonsPage.step5Short')}</span>
         </div>
       </div>
 
@@ -312,9 +312,9 @@ function LessonsContent() {
       ) : lessons.length === 0 ? (
         <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-12 text-center">
           <Lightbulb className="mx-auto h-8 w-8 text-slate-600 mb-2" />
-          <div className="text-sm font-semibold text-slate-300">Chưa có bài học kinh nghiệm nào</div>
+          <div className="text-sm font-semibold text-slate-300">{t('knowledge.lessonsPage.emptyTitle')}</div>
           <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
-            Đúc kết từ sự cố kỹ thuật hoặc kinh nghiệm quản lý dự án để không lặp lại sai lầm trong tương lai.
+            {t('knowledge.lessonsPage.emptyDesc')}
           </p>
           <button
             type="button"
@@ -322,7 +322,7 @@ function LessonsContent() {
             className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 transition"
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>Tạo bài học đầu tiên</span>
+            <span>{t('knowledge.lessonsPage.createFirst')}</span>
           </button>
         </div>
       ) : (
@@ -343,14 +343,14 @@ function LessonsContent() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
           <div className="w-full max-w-3xl rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl flex flex-col max-h-[92vh]">
             <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                 <Lightbulb className="h-4 w-4 text-amber-400" />
-                <span>{editingLesson ? 'Chỉnh sửa bài học kinh nghiệm' : 'Đúc kết bài học kinh nghiệm mới'}</span>
+                <span>{editingLesson ? t('knowledge.lessonsPage.modalEditTitle') : t('knowledge.lessonsPage.modalCreateTitle')}</span>
               </h2>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white"
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-foreground"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -360,12 +360,12 @@ function LessonsContent() {
               {/* Title */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Tiêu đề bài học <span className="text-red-400">*</span>
+                  {t('knowledge.lessonsPage.titleLabel')} <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Ví dụ: Xử lý nghẽn kết nối Database Connection Pool khi chạy Batch Job lớn"
+                  placeholder={t('knowledge.lessonsPage.titlePlaceholder')}
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
                   className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
@@ -375,13 +375,13 @@ function LessonsContent() {
               {/* Project & Tags */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Liên kết dự án</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">{t('common.projectLink')}</label>
                   <select
                     value={formProjectId}
                     onChange={(e) => setFormProjectId(e.target.value)}
                     className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
                   >
-                    <option value="">-- Không liên kết --</option>
+                    <option value="">{t('common.noProjectLink')}</option>
                     {projects.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.code} - {p.name}
@@ -392,7 +392,7 @@ function LessonsContent() {
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Nhãn (Tags) <span className="text-[10px] text-slate-500 font-normal">(cách nhau bằng dấu phẩy)</span>
+                    {t('common.tags')} <span className="text-[10px] text-slate-500 font-normal">{t('common.tagsCommaHint')}</span>
                   </label>
                   <div className="relative">
                     <Tag className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-500" />
@@ -413,11 +413,11 @@ function LessonsContent() {
                 <div className="rounded-xl border border-blue-900/40 bg-blue-950/20 p-3 space-y-1">
                   <label className="block text-xs font-bold text-blue-400 flex items-center gap-1.5">
                     <Compass className="h-3.5 w-3.5 text-blue-400" />
-                    <span>1. Hoàn cảnh / Bối cảnh (Situation / Context)</span>
+                    <span>{t('knowledge.lessonsPage.step1Label')}</span>
                   </label>
                   <textarea
                     rows={2}
-                    placeholder="Mô tả bối cảnh diễn ra sự việc (Ví dụ: Đợt quyết toán cuối tháng, hệ thống chạy 10 worker cùng lúc...)"
+                    placeholder={t('knowledge.lessonsPage.step1Placeholder')}
                     value={formSituation}
                     onChange={(e) => setFormSituation(e.target.value)}
                     className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-xs text-slate-200 focus:border-blue-500 focus:outline-none"
@@ -428,12 +428,12 @@ function LessonsContent() {
                 <div className="rounded-xl border border-amber-900/40 bg-amber-950/20 p-3 space-y-1">
                   <label className="block text-xs font-bold text-amber-400 flex items-center gap-1.5">
                     <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
-                    <span>2. Vấn đề gặp phải (Problem) <span className="text-red-400">*</span></span>
+                    <span>{t('knowledge.lessonsPage.step2Label')} <span className="text-red-400">*</span></span>
                   </label>
                   <textarea
                     required
                     rows={2}
-                    placeholder="Sự cố hoặc khó khăn chính xuất hiện (Ví dụ: DB pool hết kết nối, API phản hồi 504 Gateway Timeout...)"
+                    placeholder={t('knowledge.lessonsPage.step2Placeholder')}
                     value={formProblem}
                     onChange={(e) => setFormProblem(e.target.value)}
                     className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-xs text-slate-200 focus:border-amber-500 focus:outline-none"
@@ -444,12 +444,12 @@ function LessonsContent() {
                 <div className="rounded-xl border border-rose-900/40 bg-rose-950/20 p-3 space-y-1">
                   <label className="block text-xs font-bold text-rose-400 flex items-center gap-1.5">
                     <Flame className="h-3.5 w-3.5 text-rose-400" />
-                    <span>3. Nguyên nhân gốc rễ (Root Cause) <span className="text-red-400">*</span></span>
+                    <span>{t('knowledge.lessonsPage.step3Label')} <span className="text-red-400">*</span></span>
                   </label>
                   <textarea
                     required
                     rows={2}
-                    placeholder="Lý do thực sự gây ra vấn đề theo nguyên tắc 5 Whys (Ví dụ: Worker giữ transaction quá lâu mà không release pool...)"
+                    placeholder={t('knowledge.lessonsPage.step3Placeholder')}
                     value={formRootCause}
                     onChange={(e) => setFormRootCause(e.target.value)}
                     className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-xs text-slate-200 focus:border-rose-500 focus:outline-none"
@@ -460,12 +460,12 @@ function LessonsContent() {
                 <div className="rounded-xl border border-emerald-900/40 bg-emerald-950/20 p-3 space-y-1">
                   <label className="block text-xs font-bold text-emerald-400 flex items-center gap-1.5">
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                    <span>4. Bài học rút ra (Lesson Learned) <span className="text-red-400">*</span></span>
+                    <span>{t('knowledge.lessonsPage.step4Label')} <span className="text-red-400">*</span></span>
                   </label>
                   <textarea
                     required
                     rows={2}
-                    placeholder="Nguyên tắc hoặc kinh nghiệm cốt lõi rút ra (Ví dụ: Phải chia nhỏ batch size & dùng separate connection pool cho background jobs...)"
+                    placeholder={t('knowledge.lessonsPage.step4Placeholder')}
                     value={formLesson}
                     onChange={(e) => setFormLesson(e.target.value)}
                     className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-xs text-slate-200 focus:border-emerald-500 focus:outline-none"
@@ -476,12 +476,12 @@ function LessonsContent() {
                 <div className="rounded-xl border border-indigo-900/40 bg-indigo-950/20 p-3 space-y-1">
                   <label className="block text-xs font-bold text-indigo-400 flex items-center gap-1.5">
                     <ArrowRight className="h-3.5 w-3.5 text-indigo-400" />
-                    <span>5. Hành động cho tương lai (Future Action) <span className="text-red-400">*</span></span>
+                    <span>{t('knowledge.lessonsPage.step5Label')} <span className="text-red-400">*</span></span>
                   </label>
                   <textarea
                     required
                     rows={2}
-                    placeholder="Quy chuẩn hoặc hành động ngăn ngừa lặp lại (Ví dụ: Cấu hình PgBouncer, thiết lập alert pool utilization > 80% trên Grafana...)"
+                    placeholder={t('knowledge.lessonsPage.step5Placeholder')}
                     value={formFutureAction}
                     onChange={(e) => setFormFutureAction(e.target.value)}
                     className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
@@ -496,14 +496,18 @@ function LessonsContent() {
                   onClick={() => setIsModalOpen(false)}
                   className="rounded-lg border border-slate-800 bg-slate-950 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 transition"
                 >
-                  Hủy
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
                   className="rounded-lg bg-indigo-600 px-5 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50 transition"
                 >
-                  {saving ? 'Đang lưu...' : editingLesson ? 'Cập nhật bài học' : 'Lưu bài học'}
+                  {saving
+                    ? t('common.saving')
+                    : editingLesson
+                    ? t('knowledge.lessonsPage.updateLesson')
+                    : t('knowledge.lessonsPage.saveLesson')}
                 </button>
               </div>
             </form>
@@ -523,7 +527,8 @@ function LessonCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  const formattedDate = new Date(lesson.created_at).toLocaleDateString('vi-VN', {
+  const { t, i18n } = useTranslation();
+  const formattedDate = new Date(lesson.created_at).toLocaleDateString(i18n.language, {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -537,7 +542,7 @@ function LessonCard({
           <div className="space-y-1">
             <h3
               onClick={onEdit}
-              className="text-sm font-bold text-white hover:text-indigo-300 cursor-pointer transition leading-snug"
+              className="text-sm font-bold text-foreground hover:text-brand cursor-pointer transition leading-snug"
             >
               {lesson.title}
             </h3>
@@ -554,7 +559,7 @@ function LessonCard({
               type="button"
               onClick={onEdit}
               className="p-1 rounded text-slate-400 hover:text-indigo-400 hover:bg-slate-800 transition"
-              title="Chỉnh sửa bài học"
+              title={t('knowledge.lessonsPage.editTitle')}
             >
               <Edit2 className="h-3.5 w-3.5" />
             </button>
@@ -562,7 +567,7 @@ function LessonCard({
               type="button"
               onClick={onDelete}
               className="p-1 rounded text-slate-400 hover:text-red-400 hover:bg-slate-800 transition"
-              title="Xóa bài học"
+              title={t('knowledge.lessonsPage.deleteTitle')}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
@@ -576,7 +581,7 @@ function LessonCard({
             <div className="rounded-lg border border-blue-900/30 bg-blue-950/20 p-2.5">
               <span className="font-semibold text-blue-400 block mb-0.5 text-[11px] flex items-center gap-1">
                 <Compass className="h-3 w-3" />
-                1. Hoàn cảnh (Situation):
+                {t('knowledge.lessonsPage.viewStep1')}
               </span>
               <p className="text-slate-300 leading-relaxed">{lesson.situation}</p>
             </div>
@@ -586,7 +591,7 @@ function LessonCard({
           <div className="rounded-lg border border-amber-900/30 bg-amber-950/20 p-2.5">
             <span className="font-semibold text-amber-400 block mb-0.5 text-[11px] flex items-center gap-1">
               <AlertTriangle className="h-3 w-3" />
-              2. Vấn đề gặp phải (Problem):
+              {t('knowledge.lessonsPage.viewStep2')}
             </span>
             <p className="text-slate-300 leading-relaxed">{lesson.problem}</p>
           </div>
@@ -595,7 +600,7 @@ function LessonCard({
           <div className="rounded-lg border border-rose-900/30 bg-rose-950/20 p-2.5">
             <span className="font-semibold text-rose-400 block mb-0.5 text-[11px] flex items-center gap-1">
               <Flame className="h-3 w-3" />
-              3. Nguyên nhân gốc rễ (Root Cause):
+              {t('knowledge.lessonsPage.viewStep3')}
             </span>
             <p className="text-slate-300 leading-relaxed">{lesson.root_cause}</p>
           </div>
@@ -604,7 +609,7 @@ function LessonCard({
           <div className="rounded-lg border border-emerald-900/30 bg-emerald-950/20 p-2.5">
             <span className="font-semibold text-emerald-400 block mb-0.5 text-[11px] flex items-center gap-1">
               <CheckCircle2 className="h-3 w-3" />
-              4. Bài học rút ra (Lesson):
+              {t('knowledge.lessonsPage.viewStep4')}
             </span>
             <p className="text-slate-200 font-medium leading-relaxed">{lesson.lesson}</p>
           </div>
@@ -613,7 +618,7 @@ function LessonCard({
           <div className="rounded-lg border border-indigo-900/30 bg-indigo-950/20 p-2.5">
             <span className="font-semibold text-indigo-400 block mb-0.5 text-[11px] flex items-center gap-1">
               <ArrowRight className="h-3 w-3" />
-              5. Hành động cho tương lai (Future Action):
+              {t('knowledge.lessonsPage.viewStep5')}
             </span>
             <p className="text-slate-300 leading-relaxed">{lesson.future_action}</p>
           </div>
@@ -624,16 +629,16 @@ function LessonCard({
       <div className="mt-4 pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-1">
           {lesson.tags && lesson.tags.length > 0 ? (
-            lesson.tags.map((t) => (
+            lesson.tags.map((tag) => (
               <span
-                key={t}
+                key={tag}
                 className="inline-flex items-center rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-400 font-mono"
               >
-                #{t}
+                #{tag}
               </span>
             ))
           ) : (
-            <span className="text-[10px] text-slate-600 italic">Không có tag</span>
+            <span className="text-[10px] text-slate-600 italic">{t('common.noTags')}</span>
           )}
         </div>
 

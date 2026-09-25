@@ -32,41 +32,39 @@ import {
 
 const STATUS_CONFIG: Record<
   string,
-  { label: string; badge: string; colBadge: string; nextStatus?: string; prevStatus?: string }
+  { badge: string; colBadge: string; nextStatus?: string; prevStatus?: string }
 > = {
   BACKLOG: {
-    label: 'Cần học (To Learn)',
     badge: 'bg-slate-500/15 text-slate-300 border-slate-500/30',
     colBadge: 'border-slate-800 bg-slate-900/60',
     nextStatus: 'LEARNING',
   },
   LEARNING: {
-    label: 'Đang học (In Progress)',
     badge: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
     colBadge: 'border-blue-900/40 bg-blue-950/20',
     nextStatus: 'COMPLETED',
     prevStatus: 'BACKLOG',
   },
   PAUSED: {
-    label: 'Tạm dừng (Paused)',
     badge: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
     colBadge: 'border-amber-900/40 bg-amber-950/20',
     nextStatus: 'LEARNING',
     prevStatus: 'BACKLOG',
   },
   COMPLETED: {
-    label: 'Hoàn thành (Completed)',
     badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
     colBadge: 'border-emerald-900/40 bg-emerald-950/20',
     prevStatus: 'LEARNING',
   },
 };
 
-const PRIORITY_MAP: Record<Priority, { label: string; badge: string }> = {
-  CRITICAL: { label: 'Khẩn cấp', badge: 'bg-red-500/20 text-red-300 border-red-500/40' },
-  HIGH: { label: 'Cao', badge: 'bg-orange-500/20 text-orange-300 border-orange-500/40' },
-  MEDIUM: { label: 'Vừa', badge: 'bg-blue-500/20 text-blue-300 border-blue-500/40' },
-  LOW: { label: 'Thấp', badge: 'bg-slate-500/20 text-slate-400 border-slate-500/40' },
+const LEARNING_STATUS_KEYS = ['BACKLOG', 'LEARNING', 'PAUSED', 'COMPLETED'] as const;
+
+const PRIORITY_MAP: Record<Priority, { badge: string }> = {
+  CRITICAL: { badge: 'bg-red-500/20 text-red-300 border-red-500/40' },
+  HIGH: { badge: 'bg-orange-500/20 text-orange-300 border-orange-500/40' },
+  MEDIUM: { badge: 'bg-blue-500/20 text-blue-300 border-blue-500/40' },
+  LOW: { badge: 'bg-slate-500/20 text-slate-400 border-slate-500/40' },
 };
 
 export default function LearningPage() {
@@ -121,11 +119,11 @@ function LearningContent() {
       const res = await apiClient<LearningItemDto[]>(`/learning-items${qs}`);
       setItems(res.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi tải danh sách học tập');
+      setError(err instanceof Error ? err.message : t('knowledge.learningPage.loadError'));
     } finally {
       setLoading(false);
     }
-  }, [search, selectedCategory, selectedPriority]);
+  }, [search, selectedCategory, selectedPriority, t]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -219,7 +217,7 @@ function LearningContent() {
       setIsModalOpen(false);
       void fetchItems();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Lỗi khi lưu chủ đề học tập');
+      alert(err instanceof Error ? err.message : t('knowledge.learningPage.saveError'));
     } finally {
       setSaving(false);
     }
@@ -233,17 +231,17 @@ function LearningContent() {
       });
       void fetchItems();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Lỗi chuyển trạng thái');
+      alert(err instanceof Error ? err.message : t('knowledge.learningPage.statusChangeError'));
     }
   };
 
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Bạn có chắc muốn xóa chủ đề học tập "${title}"?`)) return;
+    if (!confirm(t('knowledge.learningPage.deleteConfirm', { title }))) return;
     try {
       await apiClient(`/learning-items/${id}`, { method: 'DELETE' });
       void fetchItems();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Lỗi khi xóa');
+      alert(err instanceof Error ? err.message : t('knowledge.learningPage.deleteError'));
     }
   };
 
@@ -252,15 +250,19 @@ function LearningContent() {
       {/* KPI STATS ROW */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3.5 shadow-sm">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Tổng chủ đề</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+            {t('knowledge.learningPage.statTotal')}
+          </span>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-white">{stats.total}</span>
-            <span className="text-[11px] text-slate-400">chủ đề</span>
+            <span className="text-2xl font-bold text-foreground">{stats.total}</span>
+            <span className="text-[11px] text-slate-400">{t('knowledge.learningPage.statTotalUnit')}</span>
           </div>
         </div>
 
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3.5 shadow-sm">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Cần học</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            {t('knowledge.learningPage.statBacklog')}
+          </span>
           <div className="mt-1 flex items-baseline gap-2">
             <span className="text-2xl font-bold text-slate-200">{stats.toLearn}</span>
             <span className="text-[11px] text-slate-400">backlog</span>
@@ -268,18 +270,22 @@ function LearningContent() {
         </div>
 
         <div className="rounded-xl border border-blue-900/40 bg-blue-950/20 p-3.5 shadow-sm">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-400">Đang học</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-400">
+            {t('knowledge.learningPage.statLearning')}
+          </span>
           <div className="mt-1 flex items-baseline gap-2">
             <span className="text-2xl font-bold text-blue-400">{stats.inProgress}</span>
-            <span className="text-[11px] text-blue-300">đang nghiên cứu</span>
+            <span className="text-[11px] text-blue-300">{t('knowledge.learningPage.statLearningUnit')}</span>
           </div>
         </div>
 
         <div className="rounded-xl border border-emerald-900/40 bg-emerald-950/20 p-3.5 shadow-sm">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400">Hoàn thành</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400">
+            {t('knowledge.learningPage.statCompleted')}
+          </span>
           <div className="mt-1 flex items-baseline gap-2">
             <span className="text-2xl font-bold text-emerald-400">{stats.completed}</span>
-            <span className="text-[11px] text-emerald-300">đã nắm vững</span>
+            <span className="text-[11px] text-emerald-300">{t('knowledge.learningPage.statCompletedUnit')}</span>
           </div>
         </div>
       </div>
@@ -292,7 +298,7 @@ function LearningContent() {
             <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-500" />
             <input
               type="text"
-              placeholder="Tìm theo chủ đề, danh mục, ghi chú..."
+              placeholder={t('knowledge.learningPage.searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-lg border border-slate-800 bg-slate-950 py-1.5 pl-8 pr-3 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -306,7 +312,7 @@ function LearningContent() {
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-300 focus:border-indigo-500 focus:outline-none"
             >
-              <option value="ALL">Mọi danh mục</option>
+              <option value="ALL">{t('common.anyCategory')}</option>
               {categories.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -321,10 +327,10 @@ function LearningContent() {
             onChange={(e) => setSelectedPriority(e.target.value)}
             className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-300 focus:border-indigo-500 focus:outline-none"
           >
-            <option value="ALL">Mọi mức ưu tiên</option>
-            {Object.entries(PRIORITY_MAP).map(([p, conf]) => (
+            <option value="ALL">{t('common.anyPriority')}</option>
+            {(Object.keys(PRIORITY_MAP) as Priority[]).map((p) => (
               <option key={p} value={p}>
-                {conf.label}
+                {t(`tasks.priority.${p}`)}
               </option>
             ))}
           </select>
@@ -339,7 +345,7 @@ function LearningContent() {
               }}
               className="text-[11px] text-slate-400 hover:text-indigo-400 transition underline underline-offset-4"
             >
-              Đặt lại
+              {t('common.reset')}
             </button>
           )}
         </div>
@@ -355,7 +361,7 @@ function LearningContent() {
                   ? 'bg-indigo-600 text-white font-semibold'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
-              title="Xem dạng Kanban"
+              title={t('common.viewKanban')}
             >
               <Kanban className="h-3.5 w-3.5" />
               <span>Kanban</span>
@@ -368,10 +374,10 @@ function LearningContent() {
                   ? 'bg-indigo-600 text-white font-semibold'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
-              title="Xem dạng Bảng"
+              title={t('common.viewTable')}
             >
               <TableIcon className="h-3.5 w-3.5" />
-              <span>Bảng</span>
+              <span>{t('common.table')}</span>
             </button>
           </div>
 
@@ -379,7 +385,7 @@ function LearningContent() {
             type="button"
             onClick={() => void fetchItems()}
             className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-950 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800 transition"
-            title="Làm mới"
+            title={t('common.refresh')}
           >
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin text-indigo-400' : ''}`} />
           </button>
@@ -390,7 +396,7 @@ function LearningContent() {
             className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 transition"
           >
             <Plus className="h-4 w-4" />
-            <span>Chủ đề mới</span>
+            <span>{t('knowledge.learningPage.newItem')}</span>
           </button>
         </div>
       </div>
@@ -398,7 +404,7 @@ function LearningContent() {
       {/* ERROR NOTICE */}
       {error && (
         <div className="p-3 bg-red-950/50 border border-red-900 rounded-xl text-red-300 text-xs">
-          Lỗi: {error}
+          {t('common.errorPrefix', { message: error })}
         </div>
       )}
 
@@ -408,9 +414,11 @@ function LearningContent() {
       ) : items.length === 0 ? (
         <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-12 text-center">
           <GraduationCap className="mx-auto h-8 w-8 text-slate-600 mb-2" />
-          <div className="text-sm font-semibold text-slate-300">Chưa có chủ đề học tập nào</div>
+          <div className="text-sm font-semibold text-slate-300">
+            {t('knowledge.learningPage.emptyTitle')}
+          </div>
           <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
-            Ghi lại các tài liệu nghiên cứu, sách, bài báo hoặc công nghệ mới mà bạn muốn tìm hiểu.
+            {t('knowledge.learningPage.emptyDesc')}
           </p>
           <button
             type="button"
@@ -418,7 +426,7 @@ function LearningContent() {
             className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 transition"
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>Thêm chủ đề đầu tiên</span>
+            <span>{t('knowledge.learningPage.createFirst')}</span>
           </button>
         </div>
       ) : viewMode === 'kanban' ? (
@@ -428,7 +436,7 @@ function LearningContent() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* Column 1: BACKLOG */}
           <KanbanColumn
-            title="Cần học (To Learn)"
+            title={t('knowledge.learningStatuses.BACKLOG')}
             statusKey="BACKLOG"
             items={items.filter((i) => i.status === 'BACKLOG')}
             onEdit={openEditModal}
@@ -438,7 +446,7 @@ function LearningContent() {
 
           {/* Column 2: LEARNING */}
           <KanbanColumn
-            title="Đang học (In Progress)"
+            title={t('knowledge.learningStatuses.LEARNING')}
             statusKey="LEARNING"
             items={items.filter((i) => i.status === 'LEARNING')}
             onEdit={openEditModal}
@@ -448,7 +456,7 @@ function LearningContent() {
 
           {/* Column 3: COMPLETED */}
           <KanbanColumn
-            title="Đã hoàn thành (Completed)"
+            title={t('knowledge.learningStatuses.COMPLETED')}
             statusKey="COMPLETED"
             items={items.filter((i) => i.status === 'COMPLETED')}
             onEdit={openEditModal}
@@ -465,13 +473,13 @@ function LearningContent() {
             <table className="w-full text-left text-xs">
               <thead className="border-b border-slate-800 bg-slate-950/60 text-slate-400">
                 <tr>
-                  <th className="px-4 py-3 font-semibold">Chủ đề học tập</th>
-                  <th className="px-4 py-3 font-semibold">Danh mục</th>
-                  <th className="px-4 py-3 font-semibold">Ưu tiên</th>
-                  <th className="px-4 py-3 font-semibold">Trạng thái</th>
-                  <th className="px-4 py-3 font-semibold">Hạn mục tiêu</th>
-                  <th className="px-4 py-3 font-semibold">Tài liệu</th>
-                  <th className="px-4 py-3 font-semibold text-right">Thao tác</th>
+                  <th className="px-4 py-3 font-semibold">{t('knowledge.learningPage.colTopic')}</th>
+                  <th className="px-4 py-3 font-semibold">{t('common.category')}</th>
+                  <th className="px-4 py-3 font-semibold">{t('common.priority')}</th>
+                  <th className="px-4 py-3 font-semibold">{t('common.status')}</th>
+                  <th className="px-4 py-3 font-semibold">{t('common.targetDate')}</th>
+                  <th className="px-4 py-3 font-semibold">{t('knowledge.learningPage.colDocs')}</th>
+                  <th className="px-4 py-3 font-semibold text-right">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -479,7 +487,7 @@ function LearningContent() {
                   const priorityConfig = PRIORITY_MAP[item.priority] ?? PRIORITY_MAP.MEDIUM;
                   return (
                     <tr key={item.id} className="hover:bg-slate-800/40 transition">
-                      <td className="px-4 py-3 font-semibold text-white">
+                      <td className="px-4 py-3 font-semibold text-foreground">
                         <div className="space-y-0.5">
                           <span
                             onClick={() => openEditModal(item)}
@@ -503,7 +511,7 @@ function LearningContent() {
                       </td>
                       <td className="px-4 py-3">
                         <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${priorityConfig.badge}`}>
-                          {priorityConfig.label}
+                          {t(`tasks.priority.${item.priority}`)}
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -512,10 +520,11 @@ function LearningContent() {
                           onChange={(e) => void handleQuickStatus(item.id, e.target.value)}
                           className="rounded border border-slate-800 bg-slate-950 px-2 py-1 text-[11px] font-medium text-slate-200 focus:border-indigo-500 focus:outline-none"
                         >
-                          <option value="BACKLOG">Cần học (To Learn)</option>
-                          <option value="LEARNING">Đang học (In Progress)</option>
-                          <option value="PAUSED">Tạm dừng (Paused)</option>
-                          <option value="COMPLETED">Hoàn thành (Completed)</option>
+                          {LEARNING_STATUS_KEYS.map((st) => (
+                            <option key={st} value={st}>
+                              {t(`knowledge.learningStatuses.${st}`)}
+                            </option>
+                          ))}
                         </select>
                       </td>
                       <td className="px-4 py-3 text-slate-400 font-mono text-[11px]">
@@ -529,7 +538,7 @@ function LearningContent() {
                             rel="noreferrer"
                             className="inline-flex items-center gap-1 text-indigo-400 hover:underline text-[11px]"
                           >
-                            <span>Mở link</span>
+                            <span>{t('common.openLink')}</span>
                             <ExternalLink className="h-3 w-3" />
                           </a>
                         ) : (
@@ -542,7 +551,7 @@ function LearningContent() {
                             type="button"
                             onClick={() => openEditModal(item)}
                             className="p-1 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded transition"
-                            title="Sửa"
+                            title={t('common.edit')}
                           >
                             <Edit2 className="h-3.5 w-3.5" />
                           </button>
@@ -550,7 +559,7 @@ function LearningContent() {
                             type="button"
                             onClick={() => handleDelete(item.id, item.title)}
                             className="p-1 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded transition"
-                            title="Xóa"
+                            title={t('common.delete')}
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
@@ -570,14 +579,18 @@ function LearningContent() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
           <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl flex flex-col max-h-[92vh]">
             <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                 <GraduationCap className="h-4 w-4 text-indigo-400" />
-                <span>{editingItem ? 'Chỉnh sửa chủ đề học tập' : 'Thêm chủ đề cần học'}</span>
+                <span>
+                  {editingItem
+                    ? t('knowledge.learningPage.modalEditTitle')
+                    : t('knowledge.learningPage.modalCreateTitle')}
+                </span>
               </h2>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white"
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-foreground"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -586,12 +599,12 @@ function LearningContent() {
             <form onSubmit={handleSaveItem} className="flex-1 overflow-y-auto p-6 space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Chủ đề / Đề tài học tập <span className="text-red-400">*</span>
+                  {t('knowledge.learningPage.topicLabel')} <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Ví dụ: Microservices Event Sourcing & CQRS Pattern"
+                  placeholder={t('knowledge.learningPage.topicPlaceholder')}
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
                   className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
@@ -600,7 +613,9 @@ function LearningContent() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Danh mục (Category)</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    {t('knowledge.learningPage.categoryLabel')}
+                  </label>
                   <input
                     type="text"
                     placeholder="Architecture, System Design..."
@@ -611,15 +626,15 @@ function LearningContent() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Mức độ ưu tiên</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">{t('common.priority')}</label>
                   <select
                     value={formPriority}
                     onChange={(e) => setFormPriority(e.target.value as Priority)}
                     className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
                   >
-                    {Object.entries(PRIORITY_MAP).map(([p, conf]) => (
+                    {(Object.keys(PRIORITY_MAP) as Priority[]).map((p) => (
                       <option key={p} value={p}>
-                        {conf.label}
+                        {t(`tasks.priority.${p}`)}
                       </option>
                     ))}
                   </select>
@@ -628,21 +643,26 @@ function LearningContent() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Trạng thái</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    {t('common.status')}
+                  </label>
                   <select
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value)}
                     className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
                   >
-                    <option value="BACKLOG">Cần học (To Learn)</option>
-                    <option value="LEARNING">Đang học (In Progress)</option>
-                    <option value="PAUSED">Tạm dừng (Paused)</option>
-                    <option value="COMPLETED">Hoàn thành (Completed)</option>
+                    {LEARNING_STATUS_KEYS.map((st) => (
+                      <option key={st} value={st}>
+                        {t(`knowledge.learningStatuses.${st}`)}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Hạn mục tiêu (Target Date)</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    {t('knowledge.learningPage.targetDateLabel')}
+                  </label>
                   <input
                     type="date"
                     value={formTargetDate}
@@ -653,7 +673,9 @@ function LearningContent() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Link tài liệu / Khóa học (URL)</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  {t('knowledge.learningPage.urlLabel')}
+                </label>
                 <input
                   type="url"
                   placeholder="https://..."
@@ -664,10 +686,12 @@ function LearningContent() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Mô tả tóm tắt</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  {t('knowledge.learningPage.summaryLabel')}
+                </label>
                 <textarea
                   rows={2}
-                  placeholder="Mục đích học hoặc nội dung trọng tâm cần đạt được..."
+                  placeholder={t('knowledge.learningPage.summaryPlaceholder')}
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
                   className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
@@ -675,10 +699,12 @@ function LearningContent() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Ghi chú thêm</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  {t('common.notesExtra')}
+                </label>
                 <textarea
                   rows={2}
-                  placeholder="Ghi chú chi tiết, tài khoản học, nguồn tham khảo..."
+                  placeholder={t('knowledge.learningPage.notesPlaceholder')}
                   value={formNotes}
                   onChange={(e) => setFormNotes(e.target.value)}
                   className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
@@ -691,14 +717,14 @@ function LearningContent() {
                   onClick={() => setIsModalOpen(false)}
                   className="rounded-lg border border-slate-800 bg-slate-950 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 transition"
                 >
-                  Hủy
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
                   className="rounded-lg bg-indigo-600 px-5 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50 transition"
                 >
-                  {saving ? 'Đang lưu...' : editingItem ? 'Cập nhật' : 'Thêm mới'}
+                  {saving ? t('common.saving') : editingItem ? t('common.update') : t('common.addNew')}
                 </button>
               </div>
             </form>
@@ -724,8 +750,8 @@ function KanbanColumn({
   onDelete: (id: string, title: string) => void;
   onMoveStatus: (id: string, newStatus: string) => void;
 }) {
+  const { t } = useTranslation();
   const conf = STATUS_CONFIG[statusKey] ?? {
-    label: statusKey,
     badge: 'bg-slate-500/15 text-slate-300 border-slate-500/30',
     colBadge: 'border-slate-800 bg-slate-900/60',
     nextStatus: undefined,
@@ -750,14 +776,20 @@ function KanbanColumn({
       {/* Cards List */}
       <div className="flex-1 space-y-3 overflow-y-auto">
         {items.length === 0 ? (
-          <div className="py-12 text-center text-xs text-slate-600 italic">Không có chủ đề nào</div>
+          <div className="py-12 text-center text-xs text-slate-600 italic">
+            {t('knowledge.learningPage.noItems')}
+          </div>
         ) : (
           items.map((item) => {
             const priorityConfig = PRIORITY_MAP[item.priority] ?? PRIORITY_MAP.MEDIUM;
             const prevStatusKey = conf.prevStatus;
             const nextStatusKey = conf.nextStatus;
-            const prevLabel = prevStatusKey ? STATUS_CONFIG[prevStatusKey]?.label : undefined;
-            const nextLabel = nextStatusKey ? STATUS_CONFIG[nextStatusKey]?.label : undefined;
+            const prevLabel = prevStatusKey
+              ? t(`knowledge.learningStatuses.${prevStatusKey}`)
+              : undefined;
+            const nextLabel = nextStatusKey
+              ? t(`knowledge.learningStatuses.${nextStatusKey}`)
+              : undefined;
 
             return (
               <div
@@ -767,7 +799,7 @@ function KanbanColumn({
                 {/* Badges & Actions */}
                 <div className="flex items-start justify-between gap-2">
                   <span className={`rounded border px-1.5 py-0.5 text-[10px] font-bold ${priorityConfig.badge}`}>
-                    {priorityConfig.label}
+                    {t(`tasks.priority.${item.priority}`)}
                   </span>
 
                   <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition">
@@ -775,7 +807,7 @@ function KanbanColumn({
                       type="button"
                       onClick={() => onEdit(item)}
                       className="p-1 rounded text-slate-400 hover:text-indigo-400 hover:bg-slate-800"
-                      title="Sửa"
+                      title={t('common.edit')}
                     >
                       <Edit2 className="h-3 w-3" />
                     </button>
@@ -783,7 +815,7 @@ function KanbanColumn({
                       type="button"
                       onClick={() => onDelete(item.id, item.title)}
                       className="p-1 rounded text-slate-400 hover:text-red-400 hover:bg-slate-800"
-                      title="Xóa"
+                      title={t('common.delete')}
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>
@@ -793,7 +825,7 @@ function KanbanColumn({
                 {/* Title */}
                 <h4
                   onClick={() => onEdit(item)}
-                  className="text-xs font-bold text-white hover:text-indigo-300 cursor-pointer transition leading-snug"
+                  className="text-xs font-bold text-foreground hover:text-brand cursor-pointer transition leading-snug"
                 >
                   {item.title}
                 </h4>
@@ -824,7 +856,7 @@ function KanbanColumn({
                       className="inline-flex items-center gap-1 text-[10px] text-indigo-400 hover:underline ml-auto"
                       title={item.resource_url}
                     >
-                      <span>Tài liệu</span>
+                      <span>{t('knowledge.learningPage.docsLabel')}</span>
                       <ExternalLink className="h-2.5 w-2.5" />
                     </a>
                   )}
@@ -837,10 +869,12 @@ function KanbanColumn({
                       type="button"
                       onClick={() => onMoveStatus(item.id, prevStatusKey)}
                       className="flex items-center gap-0.5 text-[10px] text-slate-400 hover:text-slate-200 transition"
-                      title={`Lùi về ${prevLabel ?? prevStatusKey}`}
+                      title={t('knowledge.learningPage.moveBack', {
+                        status: prevLabel ?? prevStatusKey,
+                      })}
                     >
                       <ChevronLeft className="h-3 w-3" />
-                      <span>Quay lại</span>
+                      <span>{t('common.back')}</span>
                     </button>
                   ) : (
                     <div />
@@ -851,9 +885,15 @@ function KanbanColumn({
                       type="button"
                       onClick={() => onMoveStatus(item.id, nextStatusKey)}
                       className="flex items-center gap-0.5 text-[10px] font-semibold text-indigo-400 hover:text-indigo-300 transition"
-                      title={`Chuyển sang ${nextLabel ?? nextStatusKey}`}
+                      title={t('knowledge.learningPage.moveNext', {
+                        status: nextLabel ?? nextStatusKey,
+                      })}
                     >
-                      <span>{statusKey === 'BACKLOG' ? 'Bắt đầu học' : 'Hoàn thành'}</span>
+                      <span>
+                        {statusKey === 'BACKLOG'
+                          ? t('knowledge.learningPage.startLearning')
+                          : t('knowledge.learningPage.markCompleted')}
+                      </span>
                       <ChevronRight className="h-3 w-3" />
                     </button>
                   )}

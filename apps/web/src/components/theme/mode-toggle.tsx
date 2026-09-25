@@ -92,7 +92,7 @@ export function ModeToggle() {
                   className={`flex items-center justify-between w-full rounded-xl px-2.5 py-2 text-xs font-medium transition ${
                     isActive
                       ? 'bg-indigo-600/20 text-indigo-300 font-semibold border border-indigo-500/30'
-                      : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                      : 'text-slate-300 hover:bg-slate-800/80 hover:text-foreground'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">

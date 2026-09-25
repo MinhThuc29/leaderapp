@@ -31,6 +31,9 @@ import {
   X,
 } from 'lucide-react';
 
+/** ACTIVE comes first because it is the default state for a newly created plan. */
+const PLAN_STATUS_KEYS: WeeklyPlanStatus[] = ['ACTIVE', 'DRAFT', 'COMPLETED'];
+
 function getISOWeekAndYear(d = new Date()): { year: number; week: number } {
   const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   const dayNum = date.getUTCDay() || 7;
@@ -209,7 +212,7 @@ function WeeklyContent() {
   const handleSavePlan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!planGoal.trim()) {
-      alert('Vui lòng nhập mục tiêu tuần');
+      alert(t('weekly.goalRequired'));
       return;
     }
 
@@ -238,7 +241,7 @@ function WeeklyContent() {
       setShowCreatePlanModal(false);
       await fetchPlans();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Có lỗi khi lưu kế hoạch tuần');
+      alert(err instanceof Error ? err.message : t('weekly.savePlanError'));
     } finally {
       setSubmitting(false);
     }
@@ -269,7 +272,7 @@ function WeeklyContent() {
       setAssigningTaskPlan(null);
       await fetchPlans();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Lỗi khi gán tasks vào tuần');
+      alert(err instanceof Error ? err.message : t('weekly.assignError'));
     } finally {
       setSubmitting(false);
     }
@@ -295,7 +298,7 @@ function WeeklyContent() {
   const handleSaveReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reviewingPlan || !reviewSummary.trim()) {
-      alert('Vui lòng nhập nhận xét tổng quan của tuần');
+      alert(t('weekly.summaryRequired'));
       return;
     }
     try {
@@ -312,7 +315,7 @@ function WeeklyContent() {
       setReviewingPlan(null);
       await fetchPlans();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Có lỗi khi lưu đánh giá tuần');
+      alert(err instanceof Error ? err.message : t('weekly.saveReviewError'));
     } finally {
       setSubmitting(false);
     }
@@ -328,13 +331,11 @@ function WeeklyContent() {
         <div>
           <div className="flex items-center gap-2">
             <CalendarDays className="h-6 w-6 text-indigo-400" />
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-              Kế hoạch Tuần (Weekly Plans)
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              {t('weekly.pageTitle')}
             </h1>
           </div>
-          <p className="mt-1 text-sm text-slate-400">
-            Lập mục tiêu tuần theo từng dự án, quản trị các task cam kết và đánh giá kết quả hàng tuần.
-          </p>
+          <p className="mt-1 text-sm text-slate-400">{t('weekly.pageSubtitle')}</p>
         </div>
 
         <button
@@ -343,7 +344,7 @@ function WeeklyContent() {
           className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-600/30 hover:bg-indigo-500 transition"
         >
           <Plus className="h-4 w-4" />
-          <span>+ Kế hoạch Tuần Mới</span>
+          <span>{t('weekly.newPlanButton')}</span>
         </button>
       </div>
 
@@ -360,12 +361,12 @@ function WeeklyContent() {
           </button>
 
           <div className="px-3 py-1 bg-slate-950 rounded-xl border border-slate-800 flex items-center gap-3">
-            <span className="text-base font-bold text-white tracking-wide">
-              Tuần {selectedWeek} / {selectedYear}
+            <span className="text-base font-bold text-foreground tracking-wide">
+              {t('weekly.weekOfYear', { week: selectedWeek, year: selectedYear })}
             </span>
             {isCurrentWeekSelected && (
               <span className="rounded-full bg-emerald-950 border border-emerald-800/80 px-2 py-0.5 text-[11px] font-semibold text-emerald-400">
-                Tuần hiện tại
+                {t('weekly.currentWeek')}
               </span>
             )}
           </div>
@@ -385,20 +386,20 @@ function WeeklyContent() {
               onClick={handleCurrentWeek}
               className="ml-2 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-indigo-300 transition"
             >
-              Về Tuần Này
+              {t('weekly.backToThisWeek')}
             </button>
           )}
         </div>
 
         {/* Project Filter */}
         <div className="flex items-center gap-3">
-          <label className="text-xs text-slate-400">Lọc dự án:</label>
+          <label className="text-xs text-slate-400">{t('common.filterProjectLabel')}</label>
           <select
             value={filterProjectId}
             onChange={(e) => setFilterProjectId(e.target.value)}
             className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
-            <option value="ALL">Tất cả dự án</option>
+            <option value="ALL">{t('common.allProjects')}</option>
             {projects.map((p) => (
               <option key={p.id} value={p.id}>
                 [{p.code}] {p.name}
@@ -411,7 +412,7 @@ function WeeklyContent() {
             onClick={() => void fetchPlans()}
             disabled={loading}
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-50 transition"
-            title="Làm mới"
+            title={t('common.refresh')}
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -420,23 +421,21 @@ function WeeklyContent() {
 
       {/* Plans List */}
       {loading ? (
-        <div className="text-center py-16 text-slate-500">Đang tải kế hoạch tuần...</div>
+        <div className="text-center py-16 text-slate-500">{t('weekly.loading')}</div>
       ) : plans.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-800 bg-slate-900/30 p-12 text-center">
           <CalendarDays className="mx-auto h-12 w-12 text-slate-600 mb-3" />
           <h3 className="text-lg font-semibold text-slate-300">
-            Chưa có kế hoạch nào trong Tuần {selectedWeek}/{selectedYear}
+            {t('weekly.emptyTitle', { week: selectedWeek, year: selectedYear })}
           </h3>
-          <p className="mt-1 text-sm text-slate-500 max-w-md mx-auto">
-            Hãy bắt đầu đặt mục tiêu tuần và chọn các task trọng tâm cho dự án của bạn.
-          </p>
+          <p className="mt-1 text-sm text-slate-500 max-w-md mx-auto">{t('weekly.emptyDesc')}</p>
           <button
             type="button"
             onClick={openCreateModal}
             className="mt-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 transition"
           >
             <Plus className="h-4 w-4" />
-            <span>Tạo Kế hoạch Tuần Ngay</span>
+            <span>{t('weekly.createFirst')}</span>
           </button>
         </div>
       ) : (
@@ -456,7 +455,7 @@ function WeeklyContent() {
                     <div className="flex items-center gap-2">
                       <Link
                         href={`/projects/${plan.project_id}`}
-                        className="text-base font-bold text-white hover:text-indigo-400 transition"
+                        className="text-base font-bold text-foreground hover:text-brand transition"
                       >
                         [{plan.project_code}] {plan.project_name}
                       </Link>
@@ -469,11 +468,14 @@ function WeeklyContent() {
                             : 'bg-slate-800 border-slate-700 text-slate-400'
                         }`}
                       >
-                        {plan.status}
+                        {t(`weekly.planStatuses.${plan.status}`, { defaultValue: plan.status })}
                       </span>
                     </div>
                     <span className="text-xs text-slate-400">
-                      Từ {formatDate(plan.start_date)} đến {formatDate(plan.end_date)}
+                      {t('weekly.dateRange', {
+                        start: formatDate(plan.start_date),
+                        end: formatDate(plan.end_date),
+                      })}
                     </span>
                   </div>
                 </div>
@@ -482,7 +484,7 @@ function WeeklyContent() {
                 <div className="flex items-center gap-3">
                   {/* Progress Indicator */}
                   <div className="flex items-center gap-3 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
-                    <span className="text-slate-400">Tiến độ tuần:</span>
+                    <span className="text-slate-400">{t('weekly.weekProgress')}</span>
                     <span className="font-mono font-bold text-emerald-400">
                       {plan.completed_tasks}/{plan.total_tasks} ({plan.completion_rate}%)
                     </span>
@@ -492,7 +494,7 @@ function WeeklyContent() {
                     type="button"
                     onClick={() => openEditModal(plan)}
                     className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition"
-                    title="Chỉnh sửa mục tiêu"
+                    title={t('weekly.editGoalTitle')}
                   >
                     <Edit2 className="h-4 w-4" />
                   </button>
@@ -501,7 +503,7 @@ function WeeklyContent() {
                     type="button"
                     onClick={() => void handleDeletePlan(plan.id)}
                     className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition"
-                    title="Xóa kế hoạch tuần"
+                    title={t('weekly.deletePlanTitle')}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -514,7 +516,7 @@ function WeeklyContent() {
                   <Target className="h-5 w-5 text-indigo-400 shrink-0 mt-0.5" />
                   <div>
                     <span className="text-xs uppercase tracking-wider font-bold text-indigo-400 block mb-0.5">
-                      Mục tiêu tuần (Weekly Goal):
+                      {t('weekly.goalSectionLabel')}
                     </span>
                     <p className="text-sm font-medium text-slate-200 leading-relaxed whitespace-pre-wrap">
                       {plan.goal}
@@ -539,7 +541,7 @@ function WeeklyContent() {
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                     <span className="text-xs uppercase font-bold text-slate-300 tracking-wider">
-                      Công việc cam kết trong tuần ({plan.tasks?.length ?? 0})
+                      {t('weekly.committedTasks', { count: plan.tasks?.length ?? 0 })}
                     </span>
                   </div>
 
@@ -549,7 +551,7 @@ function WeeklyContent() {
                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition"
                   >
                     <Plus className="h-3.5 w-3.5" />
-                    <span>+ Thêm Task vào Tuần</span>
+                    <span>{t('weekly.addTaskButton')}</span>
                   </button>
                 </div>
 
@@ -580,11 +582,15 @@ function WeeklyContent() {
                                   isDone ? 'line-through text-slate-500' : 'text-slate-200'
                                 }`}
                               >
-                                {wpt.task?.title ?? 'Không tìm thấy tên task'}
+                                {wpt.task?.title ?? t('weekly.taskNotFound')}
                               </span>
                               <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-400">
                                 {wpt.task?.due_date && (
-                                  <span>Hạn: {formatDate(wpt.task.due_date)}</span>
+                                  <span>
+                                    {t('common.dueDateShort', {
+                                      date: formatDate(wpt.task.due_date),
+                                    })}
+                                  </span>
                                 )}
                                 {wpt.task?.assignee && (
                                   <span className="flex items-center gap-1">
@@ -607,14 +613,16 @@ function WeeklyContent() {
                                     : 'bg-slate-800 text-slate-400 border-slate-700'
                                 }`}
                               >
-                                {wpt.task.priority}
+                                {t(`tasks.priority.${wpt.task.priority}`, {
+                                  defaultValue: wpt.task.priority,
+                                })}
                               </span>
                             )}
                             <button
                               type="button"
                               onClick={() => void handleRemoveTask(plan.id, wpt.task_id)}
                               className="p-1 text-slate-500 hover:text-red-400 transition"
-                              title="Loại bỏ task khỏi tuần"
+                              title={t('weekly.removeTaskTitle')}
                             >
                               <X className="h-4 w-4" />
                             </button>
@@ -625,7 +633,7 @@ function WeeklyContent() {
                   </div>
                 ) : (
                   <div className="py-4 text-center text-xs text-slate-500 italic bg-slate-950/40 rounded-xl border border-slate-800/80">
-                    Chưa có công việc nào được gán vào tuần này. Bấm "+ Thêm Task vào Tuần" để gán.
+                    {t('weekly.noTasksAssigned')}
                   </div>
                 )}
               </div>
@@ -636,7 +644,7 @@ function WeeklyContent() {
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-amber-400" />
                     <span className="text-xs uppercase font-bold text-amber-300 tracking-wider">
-                      Đánh giá tuần (Weekly Review)
+                      {t('weekly.reviewSectionTitle')}
                     </span>
                   </div>
 
@@ -646,7 +654,11 @@ function WeeklyContent() {
                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition"
                   >
                     <Edit2 className="h-3.5 w-3.5" />
-                    <span>{plan.review ? 'Cập nhật Review' : '+ Ghi nhận Đánh giá Tuần'}</span>
+                    <span>
+                      {plan.review
+                        ? t('weekly.updateReviewButton')
+                        : t('weekly.createReviewButton')}
+                    </span>
                   </button>
                 </div>
 
@@ -654,7 +666,7 @@ function WeeklyContent() {
                   <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-3">
                     <div>
                       <span className="text-xs text-slate-400 font-semibold block mb-1">
-                        Tổng kết Leader:
+                        {t('weekly.leaderSummaryLabel')}
                       </span>
                       <p className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap">
                         {plan.review.summary}
@@ -669,7 +681,7 @@ function WeeklyContent() {
                           <div className="rounded-lg bg-emerald-950/30 border border-emerald-900/50 p-2.5">
                             <span className="font-semibold text-emerald-400 flex items-center gap-1 mb-1">
                               <Trophy className="h-3.5 w-3.5" />
-                              Thành tựu chính
+                              {t('weekly.achievementsShort')}
                             </span>
                             <p className="text-slate-300 leading-relaxed">
                               {plan.review.achievements}
@@ -681,7 +693,7 @@ function WeeklyContent() {
                           <div className="rounded-lg bg-amber-950/30 border border-amber-900/50 p-2.5">
                             <span className="font-semibold text-amber-400 flex items-center gap-1 mb-1">
                               <AlertTriangle className="h-3.5 w-3.5" />
-                              Thách thức / Vướng mắc
+                              {t('weekly.challengesShort')}
                             </span>
                             <p className="text-slate-300 leading-relaxed">
                               {plan.review.challenges}
@@ -693,7 +705,7 @@ function WeeklyContent() {
                           <div className="rounded-lg bg-indigo-950/30 border border-indigo-900/50 p-2.5">
                             <span className="font-semibold text-indigo-400 flex items-center gap-1 mb-1">
                               <Sparkles className="h-3.5 w-3.5" />
-                              Cải tiến tuần tới
+                              {t('weekly.improvementsShort')}
                             </span>
                             <p className="text-slate-300 leading-relaxed">
                               {plan.review.improvements}
@@ -705,7 +717,7 @@ function WeeklyContent() {
                   </div>
                 ) : (
                   <p className="text-xs text-slate-500 italic">
-                    Chưa có đánh giá cho tuần này. Cuối tuần hãy ghi nhận kết quả và bài học kinh nghiệm để lưu lại lịch sử quản trị.
+                    {t('weekly.noReviewYet')}
                   </p>
                 )}
               </div>
@@ -721,13 +733,13 @@ function WeeklyContent() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
           <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-              <h2 className="text-lg font-bold text-white">
-                {editingPlan ? 'Chỉnh sửa Kế hoạch Tuần' : 'Tạo Kế hoạch Tuần Mới'}
+              <h2 className="text-lg font-bold text-foreground">
+                {editingPlan ? t('weekly.modalEditTitle') : t('weekly.modalCreateTitle')}
               </h2>
               <button
                 type="button"
                 onClick={() => setShowCreatePlanModal(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-foreground"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -735,7 +747,9 @@ function WeeklyContent() {
 
             <form onSubmit={handleSavePlan} className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Dự án</label>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  {t('common.project')}
+                </label>
                 <select
                   value={planProjectId}
                   onChange={(e) => setPlanProjectId(e.target.value)}
@@ -752,7 +766,9 @@ function WeeklyContent() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Năm</label>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">
+                    {t('common.year')}
+                  </label>
                   <input
                     type="number"
                     value={selectedYear}
@@ -761,7 +777,9 @@ function WeeklyContent() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Tuần số</label>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">
+                    {t('weekly.weekNumberLabel')}
+                  </label>
                   <input
                     type="number"
                     value={selectedWeek}
@@ -773,28 +791,32 @@ function WeeklyContent() {
 
               <div>
                 <label className="text-xs font-semibold text-slate-300 block mb-1">
-                  Mục tiêu trọng tâm của tuần (Weekly Goal) *
+                  {t('weekly.goalLabel')}
                 </label>
                 <textarea
                   rows={3}
                   value={planGoal}
                   onChange={(e) => setPlanGoal(e.target.value)}
-                  placeholder="Ví dụ: Hoàn tất tích hợp thanh toán và chạy thử nghiệm Alpha nội bộ..."
+                  placeholder={t('weekly.goalPlaceholder')}
                   required
                   className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Trạng thái</label>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  {t('common.status')}
+                </label>
                 <select
                   value={planStatus}
                   onChange={(e) => setPlanStatus(e.target.value as WeeklyPlanStatus)}
                   className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value="ACTIVE">ACTIVE (Đang thực hiện)</option>
-                  <option value="DRAFT">DRAFT (Bản nháp)</option>
-                  <option value="COMPLETED">COMPLETED (Đã hoàn thành)</option>
+                  {PLAN_STATUS_KEYS.map((st) => (
+                    <option key={st} value={st}>
+                      {t(`weekly.planStatusOptions.${st}`)}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -804,14 +826,14 @@ function WeeklyContent() {
                   onClick={() => setShowCreatePlanModal(false)}
                   className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 transition"
                 >
-                  Hủy
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
                   className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50 transition"
                 >
-                  {submitting ? 'Đang lưu...' : 'Lưu Kế hoạch'}
+                  {submitting ? t('common.saving') : t('weekly.savePlan')}
                 </button>
               </div>
             </form>
@@ -827,15 +849,20 @@ function WeeklyContent() {
           <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
               <div>
-                <h2 className="text-lg font-bold text-white">Gán Task vào Kế hoạch Tuần</h2>
+                <h2 className="text-lg font-bold text-foreground">
+                  {t('weekly.assignModalTitle')}
+                </h2>
                 <p className="text-xs text-slate-400">
-                  Dự án: [{assigningTaskPlan.project_code}] {assigningTaskPlan.project_name}
+                  {t('weekly.assignModalProject', {
+                    code: assigningTaskPlan.project_code,
+                    name: assigningTaskPlan.project_name,
+                  })}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setAssigningTaskPlan(null)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-foreground"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -844,15 +871,15 @@ function WeeklyContent() {
             <div className="space-y-4">
               {projectTasks.length === 0 ? (
                 <div className="text-center py-8 text-xs text-slate-400">
-                  Không còn task mở nào trong dự án này để gán. Hãy tạo thêm task trong module Công việc.
+                  {t('weekly.noOpenTasks')}
                 </div>
               ) : (
                 <div className="max-h-60 overflow-y-auto divide-y divide-slate-800 rounded-xl border border-slate-800 bg-slate-950 p-2">
-                  {projectTasks.map((t) => {
-                    const checked = selectedTaskIds.includes(t.id);
+                  {projectTasks.map((item) => {
+                    const checked = selectedTaskIds.includes(item.id);
                     return (
                       <label
-                        key={t.id}
+                        key={item.id}
                         className="flex items-center gap-3 p-2.5 hover:bg-slate-900/60 rounded-lg cursor-pointer transition text-xs"
                       >
                         <input
@@ -860,18 +887,26 @@ function WeeklyContent() {
                           checked={checked}
                           onChange={(e) => {
                             if (e.target.checked) {
-                              setSelectedTaskIds((prev) => [...prev, t.id]);
+                              setSelectedTaskIds((prev) => [...prev, item.id]);
                             } else {
-                              setSelectedTaskIds((prev) => prev.filter((id) => id !== t.id));
+                              setSelectedTaskIds((prev) => prev.filter((id) => id !== item.id));
                             }
                           }}
                           className="rounded border-slate-700 bg-slate-800 text-indigo-600 focus:ring-indigo-500"
                         />
                         <div className="min-w-0 flex-1">
-                          <span className="font-semibold text-slate-200 block truncate">{t.title}</span>
+                          <span className="font-semibold text-slate-200 block truncate">
+                            {item.title}
+                          </span>
                           <span className="text-[11px] text-slate-400">
-                            {t.due_date ? `Hạn: ${formatDate(t.due_date)} · ` : ''}
-                            Ưu tiên: {t.priority}
+                            {item.due_date
+                              ? `${t('common.dueDateShort', { date: formatDate(item.due_date) })} · `
+                              : ''}
+                            {t('weekly.taskPriorityPrefix', {
+                              value: t(`tasks.priority.${item.priority}`, {
+                                defaultValue: item.priority,
+                              }),
+                            })}
                           </span>
                         </div>
                       </label>
@@ -886,7 +921,7 @@ function WeeklyContent() {
                   onClick={() => setAssigningTaskPlan(null)}
                   className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 transition"
                 >
-                  Hủy
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="button"
@@ -894,7 +929,9 @@ function WeeklyContent() {
                   disabled={submitting || selectedTaskIds.length === 0}
                   className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50 transition"
                 >
-                  {submitting ? 'Đang gán...' : `Gán (${selectedTaskIds.length}) Task`}
+                  {submitting
+                    ? t('weekly.assigning')
+                    : t('weekly.assignCount', { count: selectedTaskIds.length })}
                 </button>
               </div>
             </div>
@@ -910,15 +947,22 @@ function WeeklyContent() {
           <div className="w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
               <div>
-                <h2 className="text-lg font-bold text-white">Ghi nhận Đánh giá Tuần (Weekly Review)</h2>
+                <h2 className="text-lg font-bold text-foreground">
+                  {t('weekly.reviewModalTitle')}
+                </h2>
                 <p className="text-xs text-slate-400">
-                  Dự án: [{reviewingPlan.project_code}] {reviewingPlan.project_name} · Tuần {reviewingPlan.week_number}/{reviewingPlan.year}
+                  {t('weekly.reviewModalMeta', {
+                    code: reviewingPlan.project_code,
+                    name: reviewingPlan.project_name,
+                    week: reviewingPlan.week_number,
+                    year: reviewingPlan.year,
+                  })}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setReviewingPlan(null)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-foreground"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -927,13 +971,13 @@ function WeeklyContent() {
             <form onSubmit={handleSaveReview} className="space-y-4">
               <div>
                 <label className="text-xs font-semibold text-slate-300 block mb-1">
-                  Nhận xét tổng quan của Leader *
+                  {t('weekly.summaryLabel')}
                 </label>
                 <textarea
                   rows={2}
                   value={reviewSummary}
                   onChange={(e) => setReviewSummary(e.target.value)}
-                  placeholder="Đánh giá chung về tiến độ, cam kết hoàn thành..."
+                  placeholder={t('weekly.summaryPlaceholder')}
                   required
                   className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
@@ -942,13 +986,13 @@ function WeeklyContent() {
               <div>
                 <label className="text-xs font-semibold text-emerald-400 flex items-center gap-1 block mb-1">
                   <Trophy className="h-3.5 w-3.5" />
-                  Thành tựu chính đã đạt được
+                  {t('weekly.achievementsLabel')}
                 </label>
                 <textarea
                   rows={2}
                   value={reviewAchievements}
                   onChange={(e) => setReviewAchievements(e.target.value)}
-                  placeholder="Các kết quả nổi bật, tính năng release thành công..."
+                  placeholder={t('weekly.achievementsPlaceholder')}
                   className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -956,13 +1000,13 @@ function WeeklyContent() {
               <div>
                 <label className="text-xs font-semibold text-amber-400 flex items-center gap-1 block mb-1">
                   <AlertTriangle className="h-3.5 w-3.5" />
-                  Khó khăn & Thách thức
+                  {t('weekly.challengesLabel')}
                 </label>
                 <textarea
                   rows={2}
                   value={reviewChallenges}
                   onChange={(e) => setReviewChallenges(e.target.value)}
-                  placeholder="Các rào cản kỹ thuật, thiếu nguồn lực hoặc độ trễ từ bên thứ ba..."
+                  placeholder={t('weekly.challengesPlaceholder')}
                   className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
@@ -970,13 +1014,13 @@ function WeeklyContent() {
               <div>
                 <label className="text-xs font-semibold text-indigo-400 flex items-center gap-1 block mb-1">
                   <Sparkles className="h-3.5 w-3.5" />
-                  Hành động cải tiến cho tuần tới
+                  {t('weekly.improvementsLabel')}
                 </label>
                 <textarea
                   rows={2}
                   value={reviewImprovements}
                   onChange={(e) => setReviewImprovements(e.target.value)}
-                  placeholder="Hành động cụ thể nhằm phòng ngừa và cải thiện hiệu suất..."
+                  placeholder={t('weekly.improvementsPlaceholder')}
                   className="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
@@ -987,14 +1031,14 @@ function WeeklyContent() {
                   onClick={() => setReviewingPlan(null)}
                   className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 transition"
                 >
-                  Hủy
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
                   className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50 transition"
                 >
-                  {submitting ? 'Đang lưu...' : 'Lưu Đánh Giá Tuần'}
+                  {submitting ? t('common.saving') : t('weekly.saveReviewButton')}
                 </button>
               </div>
             </form>

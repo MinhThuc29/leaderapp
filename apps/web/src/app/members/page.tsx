@@ -76,11 +76,11 @@ function MembersContent() {
       const res = await apiClient<MemberDto[]>('/members');
       setMembers(res.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tải danh sách thành viên');
+      setError(err instanceof Error ? err.message : t('members.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void fetchMembers();
@@ -158,7 +158,7 @@ function MembersContent() {
       setIsModalOpen(false);
       await fetchMembers();
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Đã có lỗi xảy ra');
+      setFormError(err instanceof Error ? err.message : t('common.genericError'));
     } finally {
       setFormSubmitting(false);
     }
@@ -175,13 +175,13 @@ function MembersContent() {
         prev.map((m) => (m.id === member.id ? { ...m, active: !m.active } : m)),
       );
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể cập nhật trạng thái');
+      alert(err instanceof Error ? err.message : t('members.toggleStatusError'));
     }
   };
 
   // Delete member
   const handleDelete = async (id: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa thành viên này? (Dữ liệu sẽ được lưu trữ an toàn)')) {
+    if (!confirm(t('members.deleteConfirm'))) {
       return;
     }
     try {
@@ -189,7 +189,7 @@ function MembersContent() {
       await apiClient(`/members/${id}`, { method: 'DELETE' });
       setMembers((prev) => prev.filter((m) => m.id !== id));
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể xóa thành viên');
+      alert(err instanceof Error ? err.message : t('members.deleteError'));
     } finally {
       setDeletingId(null);
     }
@@ -221,7 +221,7 @@ function MembersContent() {
       {/* Header section */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
             <Users className="h-6 w-6 text-indigo-400" />
             <span>{t('members.title')}</span>
           </h1>
@@ -244,9 +244,8 @@ function MembersContent() {
       <div className="flex items-start gap-3 rounded-lg border border-slate-800 bg-slate-900/50 p-3.5 text-xs text-slate-400">
         <Info className="h-4 w-4 text-indigo-400 shrink-0 mt-0.5" />
         <div>
-          <span className="font-semibold text-slate-300">Quy tắc kiến trúc Single-user:</span> Thành
-          viên (Member) là nhân sự do Leader quản lý, không sở hữu tài khoản đăng nhập hay mật khẩu.
-          Chỉ có tài khoản duy nhất của bạn (Leader) đăng nhập vào hệ thống.
+          <span className="font-semibold text-slate-300">{t('members.singleUserRuleLabel')}</span>{' '}
+          {t('members.singleUserRuleDesc')}
         </div>
       </div>
 
@@ -264,7 +263,7 @@ function MembersContent() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400 font-medium">Trạng thái:</span>
+          <span className="text-xs text-slate-400 font-medium">{t('common.status')}:</span>
           <div className="inline-flex rounded-lg bg-slate-950 p-0.5 border border-slate-800 text-xs">
             <button
               type="button"
@@ -316,9 +315,9 @@ function MembersContent() {
           <button
             type="button"
             onClick={() => void fetchMembers()}
-            className="mt-4 px-4 py-1.5 text-xs bg-red-900/60 hover:bg-red-800 text-white rounded-lg transition"
+            className="mt-4 px-4 py-1.5 text-xs bg-danger text-white rounded-lg transition hover:opacity-90"
           >
-            Thử lại
+            {t('common.retry')}
           </button>
         </div>
       ) : filteredMembers.length === 0 ? (
@@ -327,8 +326,8 @@ function MembersContent() {
           <h3 className="mt-3 text-base font-semibold text-slate-300">{t('members.noMembersFound')}</h3>
           <p className="mt-1 text-sm text-slate-500">
             {searchQuery || statusFilter !== 'all'
-              ? 'Không có thành viên phù hợp với bộ lọc tìm kiếm.'
-              : 'Bắt đầu bằng cách thêm thành viên đầu tiên vào đội ngũ của bạn.'}
+              ? t('members.noFilterResult')
+              : t('members.emptyStateHint')}
           </p>
           {!searchQuery && statusFilter === 'all' && (
             <button
@@ -348,7 +347,7 @@ function MembersContent() {
               <tr>
                 <th scope="col" className="px-5 py-3.5">{t('members.memberName')}</th>
                 <th scope="col" className="px-5 py-3.5">{t('members.role')} & {t('members.level')}</th>
-                <th scope="col" className="px-5 py-3.5">Liên hệ</th>
+                <th scope="col" className="px-5 py-3.5">{t('members.contact')}</th>
                 <th scope="col" className="px-5 py-3.5">{t('common.status')}</th>
                 <th scope="col" className="px-5 py-3.5">{t('common.notes')}</th>
                 <th scope="col" className="px-5 py-3.5 text-right">{t('common.actions')}</th>
@@ -364,7 +363,7 @@ function MembersContent() {
                         {member.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <div className="font-semibold text-white">
+                        <div className="font-semibold text-foreground">
                           {member.name}
                           {member.nickname ? (
                             <span className="ml-1.5 text-xs font-normal text-slate-400">
@@ -373,7 +372,7 @@ function MembersContent() {
                           ) : null}
                         </div>
                         <div className="text-[11px] text-slate-500">
-                          Gia nhập: {member.created_at.split('T')[0]}
+                          {t('members.joinedAt', { date: member.created_at.split('T')[0] ?? '' })}
                         </div>
                       </div>
                     </div>
@@ -417,7 +416,7 @@ function MembersContent() {
                     <button
                       type="button"
                       onClick={() => void handleToggleActive(member)}
-                      title="Bấm để đổi trạng thái hoạt động"
+                      title={t('members.toggleStatusTitle')}
                       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border transition ${
                         member.active
                           ? 'bg-emerald-950/50 text-emerald-300 border-emerald-800/80 hover:bg-emerald-900/50'
@@ -427,12 +426,12 @@ function MembersContent() {
                       {member.active ? (
                         <>
                           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                          <span>Hoạt động</span>
+                          <span>{t('members.badgeActive')}</span>
                         </>
                       ) : (
                         <>
                           <XCircle className="h-3.5 w-3.5 text-slate-400" />
-                          <span>Nghỉ việc</span>
+                          <span>{t('members.badgeInactive')}</span>
                         </>
                       )}
                     </button>
@@ -450,7 +449,7 @@ function MembersContent() {
                         type="button"
                         onClick={() => handleOpenEdit(member)}
                         className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition"
-                        title="Chỉnh sửa thông tin"
+                        title={t('members.editTitle')}
                       >
                         <Edit2 className="h-4 w-4" />
                       </button>
@@ -459,7 +458,7 @@ function MembersContent() {
                         onClick={() => void handleDelete(member.id)}
                         disabled={deletingId === member.id}
                         className="rounded-lg p-1.5 text-red-400 hover:bg-red-950/60 hover:text-red-300 transition disabled:opacity-50"
-                        title="Xóa thành viên"
+                        title={t('members.deleteTitle')}
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -476,8 +475,8 @@ function MembersContent() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingMember ? 'Chỉnh sửa Thành viên' : 'Thêm Thành viên mới'}
-        description="Thông tin nhân sự do Leader quản lý. Thành viên không có quyền đăng nhập."
+        title={editingMember ? t('members.modalEditTitle') : t('members.modalCreateTitle')}
+        description={t('members.modalDesc')}
         maxWidth="md"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -495,7 +494,7 @@ function MembersContent() {
               <input
                 type="text"
                 required
-                placeholder="VD: Nguyễn Văn A"
+                placeholder={t('members.namePlaceholder')}
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
@@ -503,10 +502,10 @@ function MembersContent() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Nickname / Tên thường gọi</label>
+              <label className="text-xs font-semibold text-slate-300">{t('members.nicknameLabel')}</label>
               <input
                 type="text"
-                placeholder="VD: Alex, Bảy..."
+                placeholder={t('members.nicknamePlaceholder')}
                 value={formData.nickname}
                 onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
@@ -517,12 +516,12 @@ function MembersContent() {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-300">
-                Vị trí (Role) <span className="text-red-400">*</span>
+                {t('members.roleRequired')} <span className="text-red-400">*</span>
               </label>
               <input
                 type="text"
                 required
-                placeholder="VD: Frontend Dev, QA, DevOps..."
+                placeholder={t('members.rolePlaceholder')}
                 value={formData.role}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
@@ -533,7 +532,7 @@ function MembersContent() {
               <label className="text-xs font-semibold text-slate-300">{t('members.level')}</label>
               <input
                 type="text"
-                placeholder="VD: Junior, Mid, Senior, Lead..."
+                placeholder={t('members.levelPlaceholder')}
                 value={formData.level}
                 onChange={(e) => setFormData({ ...formData, level: e.target.value })}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
@@ -574,15 +573,15 @@ function MembersContent() {
               className="h-4 w-4 rounded border-slate-700 bg-slate-950 text-indigo-600 focus:ring-indigo-500"
             />
             <label htmlFor="member-active" className="text-xs font-medium text-slate-300">
-              Đang hoạt động trong đội ngũ (Active)
+              {t('members.activeCheckboxLabel')}
             </label>
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">Ghi chú riêng của Leader</label>
+            <label className="text-xs font-semibold text-slate-300">{t('members.notes')}</label>
             <textarea
               rows={3}
-              placeholder="Ghi chú về sở trường, điểm mạnh, lưu ý khi giao việc..."
+              placeholder={t('members.notesPlaceholder')}
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
@@ -595,7 +594,7 @@ function MembersContent() {
               onClick={() => setIsModalOpen(false)}
               className="rounded-lg border border-slate-700 px-4 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 transition"
             >
-              Hủy
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
@@ -603,10 +602,10 @@ function MembersContent() {
               className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-600/30 hover:bg-indigo-500 transition disabled:opacity-50"
             >
               {formSubmitting
-                ? 'Đang lưu...'
+                ? t('common.saving')
                 : editingMember
-                ? 'Cập nhật thành viên'
-                : 'Thêm mới'}
+                ? t('members.updateMember')
+                : t('common.addNew')}
             </button>
           </div>
         </form>

@@ -44,7 +44,7 @@ export function DashboardCockpit() {
       const res = await apiClient<DashboardSummaryDto>('/dashboard/summary');
       setData(res.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tải dữ liệu Dashboard');
+      setError(err instanceof Error ? err.message : t('dashboard.loadError'));
     } finally {
       setLoading(false);
     }
@@ -63,7 +63,7 @@ export function DashboardCockpit() {
             <LayoutDashboard className="h-3.5 w-3.5 text-indigo-400" />
             {t('dashboard.title')}
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             {t('dashboard.title')}
           </h1>
           <p className="mt-1 text-sm text-slate-400">
@@ -83,7 +83,7 @@ export function DashboardCockpit() {
       </div>
 
       {loading && !data ? (
-        <div className="text-center py-20 text-slate-500">Đang quét toàn bộ hệ thống...</div>
+        <div className="text-center py-20 text-slate-500">{t('dashboard.scanning')}</div>
       ) : error ? (
         <div className="rounded-2xl border border-red-900 bg-red-950/40 p-6 text-center text-red-300">
           <AlertTriangle className="mx-auto h-8 w-8 mb-2" />
@@ -98,7 +98,7 @@ export function DashboardCockpit() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShieldAlert className="h-5 w-5 text-amber-400" />
-                <h2 className="text-sm uppercase tracking-wider font-bold text-white">
+                <h2 className="text-sm uppercase tracking-wider font-bold text-foreground">
                   {t('dashboard.needAttention')}
                 </h2>
               </div>
@@ -146,7 +146,7 @@ export function DashboardCockpit() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FolderKanban className="h-5 w-5 text-indigo-400" />
-                <h2 className="text-sm uppercase tracking-wider font-bold text-white">
+                <h2 className="text-sm uppercase tracking-wider font-bold text-foreground">
                   {t('dashboard.activeProjects')} ({data.active_projects.length})
                 </h2>
               </div>
@@ -192,14 +192,14 @@ export function DashboardCockpit() {
                         </div>
                       </div>
 
-                      <h3 className="text-base font-bold text-white group-hover:text-indigo-300 transition line-clamp-1">
+                      <h3 className="text-base font-bold text-foreground group-hover:text-indigo-300 transition line-clamp-1">
                         {proj.name}
                       </h3>
 
                       <div className="mt-4">
                         <div className="flex justify-between text-xs text-slate-400 mb-1.5">
-                          <span>Tiến độ</span>
-                          <span className="font-mono font-bold text-white">{proj.progress}%</span>
+                          <span>{t('common.progress')}</span>
+                          <span className="font-mono font-bold text-foreground">{proj.progress}%</span>
                         </div>
                         <div className="h-2 w-full rounded-full bg-slate-800 overflow-hidden">
                           <div
@@ -224,17 +224,19 @@ export function DashboardCockpit() {
                         </span>
                         <span className="flex items-center gap-1">
                           <CheckCircle2 className="h-3.5 w-3.5 text-slate-500" />
-                          {proj.open_tasks_count} việc
+                          {t('dashboard.openTasksCount', { count: proj.open_tasks_count })}
                         </span>
                         {proj.overdue_tasks_count > 0 && (
                           <span className="text-red-400 font-semibold">
-                            {proj.overdue_tasks_count} trễ
+                            {t('dashboard.overdueCount', { count: proj.overdue_tasks_count })}
                           </span>
                         )}
                       </div>
 
                       {proj.target_date && (
-                        <span>Hạn: {formatDate(proj.target_date)}</span>
+                        <span>
+                          {t('common.dueDateShort', { date: formatDate(proj.target_date) })}
+                        </span>
                       )}
                     </div>
                   </Link>
@@ -253,7 +255,7 @@ export function DashboardCockpit() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <SunMedium className="h-5 w-5 text-amber-400" />
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                    <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
                       {t('dashboard.myDay')}
                     </h3>
                   </div>
@@ -313,7 +315,7 @@ export function DashboardCockpit() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <CalendarDays className="h-5 w-5 text-indigo-400" />
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                    <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
                       {t('dashboard.weeklyPlan')} ({data.weekly_summary.week_number})
                     </h3>
                   </div>
@@ -386,7 +388,7 @@ export function DashboardCockpit() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Clock className="h-5 w-5 text-indigo-400" />
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                    <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
                       {t('dashboard.followUps')} ({data.today_summary.pending_follow_ups_count})
                     </h3>
                   </div>
@@ -415,7 +417,8 @@ export function DashboardCockpit() {
                             {fu.title}
                           </span>
                           <span className="text-[11px] text-slate-400 block mt-0.5">
-                            Chờ: <strong className="text-slate-300">{fu.waiting_for}</strong>
+                            {t('dashboard.waitingPrefix')}{' '}
+                            <strong className="text-slate-300">{fu.waiting_for}</strong>
                             {fu.project_name ? ` · [${fu.project_name}]` : ''}
                           </span>
                         </div>
@@ -447,16 +450,9 @@ function NeedAttentionCard({ item }: { item: NeedAttentionItem }) {
   const { t } = useTranslation();
   const isCritical = item.severity === 'CRITICAL';
 
-  let ruleBadge = 'Cảnh báo rủi ro';
-  if (item.rule_code === 'RULE_TASK_OVERDUE_OR_URGENT') {
-    ruleBadge = 'Task Quá Hạn / Khẩn Cấp';
-  } else if (item.rule_code === 'RULE_MILESTONE_AT_RISK') {
-    ruleBadge = 'Cột Mốc Rủi Ro';
-  } else if (item.rule_code === 'RULE_PROJECT_HEALTH_RISK') {
-    ruleBadge = 'Sức Khỏe Dự Án';
-  } else if (item.rule_code === 'RULE_FOLLOWUP_DELAYED') {
-    ruleBadge = 'Follow-up Trễ Hẹn';
-  }
+  const ruleBadge = t(`dashboard.rules.${item.rule_code}`, {
+    defaultValue: t('dashboard.ruleBadgeDefault'),
+  });
 
   let actionLink = '/tasks';
   if (item.entity_type === 'PROJECT') {
@@ -499,19 +495,19 @@ function NeedAttentionCard({ item }: { item: NeedAttentionItem }) {
           )}
         </div>
 
-        <h3 className="text-sm font-bold text-white leading-snug line-clamp-2 mb-1.5">
+        <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-2 mb-1.5">
           {item.title}
         </h3>
 
         <p className="text-xs text-slate-300 leading-relaxed bg-slate-950/60 rounded-xl p-2.5 border border-slate-800/80">
-          <strong className="text-slate-400 block mb-0.5">Lý do cảnh báo:</strong>
+          <strong className="text-slate-400 block mb-0.5">{t('dashboard.reasonLabel')}</strong>
           {item.reason}
         </p>
       </div>
 
       <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs">
         <span className="text-[11px] text-slate-400 italic">
-          {item.action_hint ?? 'Cần rà soát và xử lý'}
+          {item.action_hint ?? t('dashboard.defaultActionHint')}
         </span>
 
         <Link

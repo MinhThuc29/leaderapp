@@ -42,6 +42,19 @@ interface PageProps {
 
 type TabKey = 'overview' | 'milestones' | 'tasks' | 'snapshots';
 
+const PROJECT_STATUS_KEYS: ProjectStatus[] = [
+  'PLANNING',
+  'ACTIVE',
+  'ON_HOLD',
+  'AT_RISK',
+  'COMPLETED',
+  'CANCELLED',
+];
+
+const HEALTH_KEYS: HealthStatus[] = ['GREEN', 'YELLOW', 'RED'];
+
+const PRIORITY_KEYS: Priority[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+
 export default function ProjectDetailPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const projectId = resolvedParams.id;
@@ -112,11 +125,11 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
       setProject(res.data);
       setProgressValue(res.data.manual_progress);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tải chi tiết dự án');
+      setError(err instanceof Error ? err.message : t('projects.detail.loadError'));
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, [projectId, t]);
 
   useEffect(() => {
     void fetchProject();
@@ -133,7 +146,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
       const res = await apiClient<MemberDto[]>('/members', {
         params: { active: true },
       });
-      // Lọc ra các thành viên chưa có trong dự án
+      // Filter out members already assigned to this project
       const currentMemberIds = new Set(
         (project?.project_members ?? [])
           .filter((pm) => !pm.left_at)
@@ -147,7 +160,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
       }
       setIsAssignModalOpen(true);
     } catch {
-      alert('Không thể tải danh sách thành viên khả dụng');
+      alert(t('projects.members.loadAvailableError'));
     }
   };
 
@@ -155,7 +168,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
   const handleAssignSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedMemberId || !projectRole.trim()) {
-      setAssignError('Vui lòng chọn thành viên và nhập vai trò trong dự án.');
+      setAssignError(t('projects.members.validationError'));
       return;
     }
 
@@ -177,7 +190,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
       setIsAssignModalOpen(false);
       await fetchProject();
     } catch (err) {
-      setAssignError(err instanceof Error ? err.message : 'Không thể phân công thành viên');
+      setAssignError(err instanceof Error ? err.message : t('projects.members.assignError'));
     } finally {
       setAssignSubmitting(false);
     }
@@ -195,7 +208,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
       });
       await fetchProject();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể gỡ thành viên');
+      alert(err instanceof Error ? err.message : t('projects.members.removeError'));
     } finally {
       setRemovingMemberId(null);
     }
@@ -212,10 +225,10 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
         body: JSON.stringify({ manual_progress: val }),
       });
       setProject((prev) => (prev ? { ...prev, manual_progress: val } : prev));
-      setProgressMsg('Đã lưu tiến độ thành công!');
+      setProgressMsg(t('projects.detail.saveProgressSuccess'));
       setTimeout(() => setProgressMsg(null), 3000);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể cập nhật tiến độ');
+      alert(err instanceof Error ? err.message : t('projects.detail.saveProgressError'));
     } finally {
       setIsUpdatingProgress(false);
     }
@@ -223,7 +236,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
 
   // Mark project as completed
   const handleMarkCompleted = async () => {
-    if (!confirm('Bạn có chắc chắn muốn đánh dấu dự án này là HOÀN THÀNH (100%)?')) {
+    if (!confirm(t('projects.detail.markCompleteConfirm'))) {
       return;
     }
     try {
@@ -237,10 +250,10 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
       });
       setProject(res.data);
       setProgressValue(100);
-      setProgressMsg('Dự án đã được chuyển sang trạng thái Hoàn thành!');
+      setProgressMsg(t('projects.detail.markCompleteSuccess'));
       setTimeout(() => setProgressMsg(null), 3000);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể hoàn thành dự án');
+      alert(err instanceof Error ? err.message : t('projects.detail.markCompleteError'));
     } finally {
       setIsUpdatingProgress(false);
     }
@@ -267,7 +280,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editFormData.name.trim()) {
-      setEditError('Tên dự án không được để trống.');
+      setEditError(t('projects.nameRequired'));
       return;
     }
 
@@ -294,7 +307,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
       setProject(res.data);
       setIsEditModalOpen(false);
     } catch (err) {
-      setEditError(err instanceof Error ? err.message : 'Không thể lưu thay đổi');
+      setEditError(err instanceof Error ? err.message : t('projects.detail.saveChangesError'));
     } finally {
       setEditSubmitting(false);
     }
@@ -302,14 +315,14 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
 
   // Delete project
   const handleDeleteProject = async () => {
-    if (!confirm('CẢNH BÁO: Bạn có chắc chắn muốn xóa dự án này? Thao tác này sẽ lưu trữ dữ liệu an toàn.')) {
+    if (!confirm(t('projects.detail.deleteConfirm'))) {
       return;
     }
     try {
       await apiClient(`/projects/${projectId}`, { method: 'DELETE' });
       router.push('/projects');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể xóa dự án');
+      alert(err instanceof Error ? err.message : t('projects.detail.deleteError'));
     }
   };
 
@@ -317,7 +330,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-slate-400">
         <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-3" />
-        <p className="text-sm">Đang tải chi tiết dự án...</p>
+        <p className="text-sm">{t('projects.detail.loading')}</p>
       </div>
     );
   }
@@ -325,11 +338,13 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
   if (error || !project) {
     return (
       <div className="rounded-xl border border-red-900/60 bg-red-950/40 p-8 text-center text-red-300">
-        <p className="font-semibold text-lg">Không tìm thấy dự án</p>
-        <p className="text-sm mt-1 text-red-400">{error ?? 'Dự án không tồn tại hoặc đã bị xóa.'}</p>
+        <p className="font-semibold text-lg">{t('projects.detail.notFound')}</p>
+        <p className="text-sm mt-1 text-red-400">
+          {error ?? t('projects.detail.notFoundDesc')}
+        </p>
         <Link
           href="/projects"
-          className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-xs bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition"
+          className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-xs bg-slate-800 hover:bg-slate-750 text-foreground rounded-lg transition"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>{t('common.back')}</span>
@@ -352,7 +367,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
           className="inline-flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-slate-200 transition"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Quay lại Dự án</span>
+          <span>{t('projects.detail.backToProjects')}</span>
         </Link>
 
         <div className="flex items-center gap-2">
@@ -362,7 +377,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-850 px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800 transition"
           >
             <Edit className="h-3.5 w-3.5 text-slate-400" />
-            <span>Chỉnh sửa thông tin</span>
+            <span>{t('projects.detail.editInfo')}</span>
           </button>
 
           <button
@@ -371,7 +386,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
             className="inline-flex items-center gap-1.5 rounded-lg border border-red-900/60 bg-red-950/30 px-3 py-1.5 text-xs font-medium text-red-400 hover:bg-red-900/50 transition"
           >
             <Trash2 className="h-3.5 w-3.5" />
-            <span>Xóa dự án</span>
+            <span>{t('projects.detail.deleteProject')}</span>
           </button>
         </div>
       </div>
@@ -387,7 +402,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
 
               {/* Status */}
               <span className="text-xs font-medium px-2.5 py-0.5 rounded border bg-indigo-950/80 text-indigo-300 border-indigo-800">
-                {project.status}
+                {t(`projects.status.${project.status}`, { defaultValue: project.status })}
               </span>
 
               {/* Health */}
@@ -409,24 +424,33 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
                       : 'bg-red-400 animate-ping'
                   }`}
                 />
-                Sức khỏe: {project.health_status}
+                {t('projects.detail.healthPrefix', {
+                  value: t(`projects.healthShort.${project.health_status}`, {
+                    defaultValue: project.health_status,
+                  }),
+                })}
               </span>
 
               {/* Priority */}
               <span className="text-xs font-medium px-2.5 py-0.5 rounded border bg-slate-800 text-slate-300 border-slate-700">
-                Ưu tiên: {project.priority}
+                {t('projects.detail.priorityPrefix', {
+                  value: t(`projects.priorityOptions.${project.priority}`, {
+                    defaultValue: project.priority,
+                  }),
+                })}
               </span>
 
               {/* Current Progress Pill */}
               <span className="text-xs font-medium px-2.5 py-0.5 rounded border bg-indigo-900/40 text-indigo-200 border-indigo-700/60 flex items-center gap-1">
                 <TrendingUp className="h-3 w-3 text-indigo-400" />
-                Tiến độ: <strong className="font-mono text-white">{project.manual_progress}%</strong>
+                {t('projects.detail.progressPrefix')}{' '}
+                <strong className="font-mono text-foreground">{project.manual_progress}%</strong>
               </span>
             </div>
 
-            <h1 className="text-2xl font-bold tracking-tight text-white">{project.name}</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">{project.name}</h1>
             <p className="mt-2 text-sm text-slate-400 max-w-3xl leading-relaxed">
-              {project.description || 'Chưa có mô tả chi tiết cho dự án này.'}
+              {project.description || t('projects.detail.noDescription')}
             </p>
           </div>
 
@@ -434,7 +458,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
           <div className="flex flex-col gap-1.5 bg-slate-950/70 border border-slate-800 p-3 rounded-lg text-xs shrink-0 min-w-[200px]">
             <div className="flex justify-between text-slate-400">
               <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" /> Bắt đầu:
+                <Calendar className="h-3.5 w-3.5" /> {t('projects.detail.startedLabel')}
               </span>
               <span className="text-slate-200 font-medium">
                 {project.start_date ? project.start_date : '—'}
@@ -442,7 +466,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
             </div>
             <div className="flex justify-between text-slate-400">
               <span className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" /> Mục tiêu:
+                <Clock className="h-3.5 w-3.5" /> {t('projects.detail.targetLabel')}
               </span>
               <span className="text-indigo-300 font-medium">
                 {project.target_date ? project.target_date : '—'}
@@ -450,7 +474,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
             </div>
             {project.completed_date ? (
               <div className="flex justify-between text-emerald-400 font-medium pt-1 border-t border-slate-800">
-                <span>Hoàn thành:</span>
+                <span>{t('projects.detail.completedLabel')}</span>
                 <span>{project.completed_date}</span>
               </div>
             ) : null}
@@ -462,7 +486,9 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
           <div className="mt-5 rounded-lg border border-amber-900/40 bg-amber-950/20 p-3 text-xs text-amber-200/90 flex items-start gap-2.5">
             <FileText className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
             <div>
-              <span className="font-semibold text-amber-300">Ghi chú riêng của Leader:</span>{' '}
+              <span className="font-semibold text-amber-300">
+                {t('projects.detail.leaderNoteLabel')}
+              </span>{' '}
               {project.leader_note}
             </div>
           </div>
@@ -481,7 +507,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
           }`}
         >
           <CheckSquare className="h-4 w-4" />
-          <span>Công việc (Tasks)</span>
+          <span>{t('projects.tabs.tasks')}</span>
         </button>
 
         <button
@@ -494,7 +520,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
           }`}
         >
           <Flag className="h-4 w-4" />
-          <span>Cột mốc (Milestones)</span>
+          <span>{t('projects.tabs.milestones')}</span>
         </button>
 
         <button
@@ -507,7 +533,9 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
           }`}
         >
           <LayoutDashboard className="h-4 w-4" />
-          <span>Tổng quan & Nhân sự ({activeAssignedMembers.length})</span>
+          <span>
+            {t('projects.tabs.overviewWithMembers', { count: activeAssignedMembers.length })}
+          </span>
         </button>
 
         <button
@@ -520,7 +548,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
           }`}
         >
           <Activity className="h-4 w-4" />
-          <span>Lịch sử tiến độ (Snapshots)</span>
+          <span>{t('projects.tabs.snapshots')}</span>
         </button>
       </div>
 
@@ -548,12 +576,12 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
           <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
               <div>
-                <h2 className="text-base font-semibold text-white flex items-center gap-2">
+                <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-indigo-400" />
-                  <span>Điều chỉnh Tiến độ Dự án (Progress Management)</span>
+                  <span>{t('projects.detail.progressSectionTitle')}</span>
                 </h2>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Cập nhật tỷ lệ hoàn thành thủ công hoặc xem tiến độ tính tự động từ Tasks.
+                  {t('projects.detail.progressSectionDesc')}
                 </p>
               </div>
 
@@ -566,7 +594,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
                     className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600/20 border border-emerald-600/50 px-3 py-1.5 text-xs font-medium text-emerald-300 hover:bg-emerald-600/30 transition disabled:opacity-50"
                   >
                     <CheckCircle className="h-3.5 w-3.5" />
-                    <span>Đánh dấu Hoàn thành (100%)</span>
+                    <span>{t('projects.detail.markComplete')}</span>
                   </button>
                 )}
               </div>
@@ -574,7 +602,9 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-300">Tiến độ hiện tại:</span>
+                <span className="text-xs font-semibold text-slate-300">
+                  {t('projects.detail.currentProgress')}
+                </span>
                 <span className="text-2xl font-bold font-mono text-indigo-400">{progressValue}%</span>
               </div>
 
@@ -590,11 +620,11 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
                   className="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
                 />
                 <div className="flex justify-between text-[11px] text-slate-500 font-mono">
-                  <span>0% (Bắt đầu)</span>
+                  <span>{t('projects.detail.sliderStart')}</span>
                   <span>25%</span>
                   <span>50%</span>
                   <span>75%</span>
-                  <span>100% (Hoàn thành)</span>
+                  <span>{t('projects.detail.sliderEnd')}</span>
                 </div>
               </div>
 
@@ -611,7 +641,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
                   disabled={isUpdatingProgress || progressValue === project.manual_progress}
                   className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 transition disabled:opacity-50 shadow-md shadow-indigo-600/20"
                 >
-                  {isUpdatingProgress ? 'Đang lưu...' : 'Lưu cập nhật tiến độ'}
+                  {isUpdatingProgress ? t('common.saving') : t('projects.detail.saveProgress')}
                 </button>
               </div>
             </div>
@@ -621,12 +651,14 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
           <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-sm space-y-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-base font-semibold text-white flex items-center gap-2">
+                <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
                   <Users className="h-5 w-5 text-indigo-400" />
-                  <span>Nhân sự tham gia dự án ({activeAssignedMembers.length})</span>
+                  <span>
+                    {t('projects.members.sectionTitle', { count: activeAssignedMembers.length })}
+                  </span>
                 </h2>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Phân công vai trò cụ thể và tỷ lệ phân bổ thời gian (Allocation %) của từng thành viên.
+                  {t('projects.members.sectionDesc')}
                 </p>
               </div>
 
@@ -636,7 +668,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
                 className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-indigo-500 transition shadow-md shadow-indigo-600/30"
               >
                 <UserPlus className="h-4 w-4" />
-                <span>Phân công thành viên</span>
+                <span>{t('projects.members.assignButton')}</span>
               </button>
             </div>
 
@@ -644,13 +676,15 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
             {activeAssignedMembers.length === 0 ? (
               <div className="rounded-lg border border-dashed border-slate-800 bg-slate-950/40 p-8 text-center">
                 <Users className="mx-auto h-8 w-8 text-slate-600" />
-                <p className="mt-2 text-sm text-slate-400">Dự án này chưa có thành viên nào được phân công.</p>
+                <p className="mt-2 text-sm text-slate-400">
+                  {t('projects.members.emptyState')}
+                </p>
                 <button
                   type="button"
                   onClick={handleOpenAssign}
                   className="mt-3 text-xs text-indigo-400 hover:underline font-medium"
                 >
-                  + Phân công thành viên đầu tiên
+                  {t('projects.members.assignFirst')}
                 </button>
               </div>
             ) : (
@@ -658,11 +692,11 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
                 <table className="min-w-full divide-y divide-slate-800 text-left text-sm">
                   <thead className="bg-slate-950 text-xs font-semibold uppercase text-slate-400">
                     <tr>
-                      <th className="px-4 py-3">Thành viên</th>
-                      <th className="px-4 py-3">Vai trò trong dự án</th>
-                      <th className="px-4 py-3">Phân bổ (%)</th>
-                      <th className="px-4 py-3">Tham gia từ</th>
-                      <th className="px-4 py-3 text-right">Thao tác</th>
+                      <th className="px-4 py-3">{t('projects.members.colMember')}</th>
+                      <th className="px-4 py-3">{t('projects.members.colRole')}</th>
+                      <th className="px-4 py-3">{t('projects.members.colAllocation')}</th>
+                      <th className="px-4 py-3">{t('projects.members.colJoinedFrom')}</th>
+                      <th className="px-4 py-3 text-right">{t('common.actions')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60">
@@ -675,7 +709,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
                             </div>
                             <div>
                               <div className="font-semibold text-slate-100 text-xs">
-                                {pm.member?.name ?? 'Không rõ'}
+                                {pm.member?.name ?? t('common.unknown')}
                               </div>
                               <div className="text-[11px] text-slate-500">
                                 {pm.member?.role} {pm.member?.level ? `· ${pm.member.level}` : ''}
@@ -704,7 +738,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
                             onClick={() => void handleRemoveMember(pm.member_id)}
                             disabled={removingMemberId === pm.member_id}
                             className="rounded p-1 text-red-400 hover:bg-red-950/50 hover:text-red-300 transition disabled:opacity-50"
-                            title="Gỡ khỏi dự án"
+                            title={t('projects.members.removeTitle')}
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -728,8 +762,8 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
       <Modal
         isOpen={isAssignModalOpen}
         onClose={() => setIsAssignModalOpen(false)}
-        title="Phân công Thành viên vào Dự án"
-        description="Chọn nhân sự và thiết lập vai trò thực tế trong dự án này."
+        title={t('projects.members.modalTitle')}
+        description={t('projects.members.modalDesc')}
         maxWidth="md"
       >
         <form onSubmit={handleAssignSubmit} className="space-y-4">
@@ -741,13 +775,13 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
 
           {activeMembers.length === 0 ? (
             <div className="rounded-lg bg-slate-950 p-4 text-center text-xs text-slate-400 border border-slate-800">
-              Tất cả thành viên đang hoạt động đã được phân công vào dự án này hoặc bạn chưa có thành viên nào trong danh sách.
+              {t('projects.members.noAvailable')}
             </div>
           ) : (
             <>
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-300">
-                  Chọn thành viên <span className="text-red-400">*</span>
+                  {t('projects.members.selectMember')} <span className="text-red-400">*</span>
                 </label>
                 <select
                   value={selectedMemberId}
@@ -771,12 +805,12 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
 
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-300">
-                  Vai trò trong dự án (Project Role) <span className="text-red-400">*</span>
+                  {t('projects.members.roleLabel')} <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="VD: Tech Lead, Core Dev, QA Tester..."
+                  placeholder={t('projects.members.rolePlaceholder')}
                   value={projectRole}
                   onChange={(e) => setProjectRole(e.target.value)}
                   className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -785,7 +819,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
 
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-300">
-                  Tỷ lệ phân bổ thời gian (Allocation %): <span className="font-mono text-indigo-400">{allocationPercent}%</span>
+                  {t('projects.members.allocationLabel')} <span className="font-mono text-indigo-400">{allocationPercent}%</span>
                 </label>
                 <input
                   type="range"
@@ -804,7 +838,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
                   onClick={() => setIsAssignModalOpen(false)}
                   className="rounded-lg border border-slate-700 px-4 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 transition"
                 >
-                  Hủy
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -823,8 +857,8 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        title="Chỉnh sửa Dự án"
-        description="Cập nhật thông tin chi tiết, trạng thái và hạn định của dự án."
+        title={t('projects.editProject')}
+        description={t('projects.editProjectDesc')}
         maxWidth="lg"
       >
         <form onSubmit={handleEditSubmit} className="space-y-4">
@@ -836,7 +870,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
 
           <div className="space-y-1">
             <label className="text-xs font-semibold text-slate-300">
-              Tên dự án <span className="text-red-400">*</span>
+              {t('projects.projectName')} <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -848,7 +882,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">Mô tả dự án</label>
+            <label className="text-xs font-semibold text-slate-300">{t('common.description')}</label>
             <textarea
               rows={2}
               value={editFormData.description}
@@ -859,7 +893,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
 
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Trạng thái</label>
+              <label className="text-xs font-semibold text-slate-300">{t('common.status')}</label>
               <select
                 value={editFormData.status}
                 onChange={(e) =>
@@ -867,17 +901,16 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
                 }
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:border-indigo-500 focus:outline-none"
               >
-                <option value="PLANNING">Lập kế hoạch</option>
-                <option value="ACTIVE">Đang chạy</option>
-                <option value="ON_HOLD">Tạm hoãn</option>
-                <option value="AT_RISK">Có rủi ro</option>
-                <option value="COMPLETED">Hoàn thành</option>
-                <option value="CANCELLED">Đã hủy</option>
+                {PROJECT_STATUS_KEYS.map((st) => (
+                  <option key={st} value={st}>
+                    {t(`projects.status.${st}`)}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Sức khỏe</label>
+              <label className="text-xs font-semibold text-slate-300">{t('projects.healthLabel')}</label>
               <select
                 value={editFormData.health_status}
                 onChange={(e) =>
@@ -885,14 +918,16 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
                 }
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:border-indigo-500 focus:outline-none"
               >
-                <option value="GREEN">Xanh (Khỏe mạnh)</option>
-                <option value="YELLOW">Vàng (Cần theo dõi)</option>
-                <option value="RED">Đỏ (Nguy cấp)</option>
+                {HEALTH_KEYS.map((h) => (
+                  <option key={h} value={h}>
+                    {t(`projects.healthOptions.${h}`)}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Độ ưu tiên</label>
+              <label className="text-xs font-semibold text-slate-300">{t('projects.priorityLabel')}</label>
               <select
                 value={editFormData.priority}
                 onChange={(e) =>
@@ -900,17 +935,18 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
                 }
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:border-indigo-500 focus:outline-none"
               >
-                <option value="LOW">Thấp</option>
-                <option value="MEDIUM">Trung bình</option>
-                <option value="HIGH">Cao</option>
-                <option value="CRITICAL">Khẩn cấp</option>
+                {PRIORITY_KEYS.map((p) => (
+                  <option key={p} value={p}>
+                    {t(`projects.priorityOptions.${p}`)}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Ngày bắt đầu</label>
+              <label className="text-xs font-semibold text-slate-300">{t('common.startDate')}</label>
               <input
                 type="date"
                 value={editFormData.start_date}
@@ -920,7 +956,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Hạn chót mục tiêu</label>
+              <label className="text-xs font-semibold text-slate-300">{t('projects.targetDateLong')}</label>
               <input
                 type="date"
                 value={editFormData.target_date}
@@ -931,7 +967,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">Ghi chú riêng của Leader</label>
+            <label className="text-xs font-semibold text-slate-300">{t('common.leaderNote')}</label>
             <textarea
               rows={2}
               value={editFormData.leader_note}
@@ -946,14 +982,14 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
               onClick={() => setIsEditModalOpen(false)}
               className="rounded-lg border border-slate-700 px-4 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 transition"
             >
-              Hủy
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={editSubmitting}
               className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-600/30 hover:bg-indigo-500 transition disabled:opacity-50"
             >
-              {editSubmitting ? 'Đang lưu...' : 'Lưu thay đổi'}
+              {editSubmitting ? t('common.saving') : t('common.saveChanges')}
             </button>
           </div>
         </form>

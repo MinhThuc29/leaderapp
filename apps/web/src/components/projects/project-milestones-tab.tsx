@@ -36,6 +36,16 @@ interface MilestoneFormData {
   order: number;
 }
 
+const MILESTONE_STATUS_CLS: Record<MilestoneStatus, string> = {
+  NOT_STARTED: 'bg-neutral-bg text-neutral-fg border-neutral-border',
+  IN_PROGRESS: 'bg-brand-bg text-brand-fg border-brand-border',
+  BLOCKED: 'bg-warning-bg text-warning-fg border-warning-border',
+  COMPLETED: 'bg-success-bg text-success-fg border-success-border',
+  CANCELLED: 'bg-danger-bg text-danger-fg border-danger-border',
+};
+
+const MILESTONE_STATUS_KEYS = Object.keys(MILESTONE_STATUS_CLS) as MilestoneStatus[];
+
 const initialFormData: MilestoneFormData = {
   title: '',
   description: '',
@@ -71,11 +81,11 @@ export function ProjectMilestonesTab({
       });
       setMilestones(res.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tải danh sách cột mốc');
+      setError(err instanceof Error ? err.message : t('projects.milestones.loadError'));
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, [projectId, t]);
 
   useEffect(() => {
     void fetchMilestones();
@@ -106,7 +116,7 @@ export function ProjectMilestonesTab({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim() || !formData.target_date) {
-      setFormError('Tiêu đề và ngày mục tiêu không được để trống.');
+      setFormError(t('projects.milestones.validationError'));
       return;
     }
 
@@ -148,7 +158,7 @@ export function ProjectMilestonesTab({
       await fetchMilestones();
       onMilestoneChanged?.();
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Đã có lỗi xảy ra');
+      setFormError(err instanceof Error ? err.message : t('common.genericError'));
     } finally {
       setFormSubmitting(false);
     }
@@ -167,7 +177,7 @@ export function ProjectMilestonesTab({
       await fetchMilestones();
       onMilestoneChanged?.();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể hoàn thành cột mốc');
+      alert(err instanceof Error ? err.message : t('projects.milestones.completeError'));
     }
   };
 
@@ -178,32 +188,25 @@ export function ProjectMilestonesTab({
       await fetchMilestones();
       onMilestoneChanged?.();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể xóa cột mốc');
+      alert(err instanceof Error ? err.message : t('projects.milestones.deleteError'));
     }
   };
 
   const renderStatusBadge = (status: MilestoneStatus, isOverdue?: boolean) => {
     if (isOverdue) {
       return (
-        <span className="inline-flex items-center gap-1 rounded bg-red-950/80 px-2 py-0.5 text-[11px] font-semibold text-red-300 border border-red-800">
-          <AlertCircle className="h-3 w-3 text-red-400" />
-          Quá hạn (Overdue)
+        <span className="inline-flex items-center gap-1 rounded bg-danger-bg px-2 py-0.5 text-[11px] font-semibold text-danger-fg border border-danger-border">
+          <AlertCircle className="h-3 w-3" />
+          {t('projects.milestones.overdue')}
         </span>
       );
     }
 
-    const config: Record<MilestoneStatus, { label: string; cls: string }> = {
-      NOT_STARTED: { label: 'Chưa bắt đầu', cls: 'bg-slate-800 text-slate-300 border-slate-700' },
-      IN_PROGRESS: { label: 'Đang thực hiện', cls: 'bg-indigo-950 text-indigo-300 border-indigo-800' },
-      BLOCKED: { label: 'Bị nghẽn (Blocked)', cls: 'bg-amber-950 text-amber-300 border-amber-800' },
-      COMPLETED: { label: 'Đã hoàn thành', cls: 'bg-emerald-950 text-emerald-300 border-emerald-800' },
-      CANCELLED: { label: 'Đã hủy', cls: 'bg-red-950 text-red-300 border-red-800' },
-    };
-
-    const c = config[status] ?? { label: status, cls: 'bg-slate-800 text-slate-300 border-slate-700' };
+    const cls =
+      MILESTONE_STATUS_CLS[status] ?? 'bg-neutral-bg text-neutral-fg border-neutral-border';
     return (
-      <span className={`inline-block rounded px-2 py-0.5 text-[11px] font-medium border ${c.cls}`}>
-        {c.label}
+      <span className={`inline-block rounded px-2 py-0.5 text-[11px] font-medium border ${cls}`}>
+        {t(`projects.milestones.statuses.${status}`, { defaultValue: status })}
       </span>
     );
   };
@@ -212,7 +215,7 @@ export function ProjectMilestonesTab({
     return (
       <div className="flex flex-col items-center justify-center py-12 text-slate-400">
         <div className="w-7 h-7 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-2" />
-        <p className="text-xs">Đang tải danh sách cột mốc...</p>
+        <p className="text-xs">{t('projects.milestones.loading')}</p>
       </div>
     );
   }
@@ -230,12 +233,12 @@ export function ProjectMilestonesTab({
       {/* Top action */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
             <Flag className="h-4 w-4 text-indigo-400" />
-            <span>Cột mốc dự án (Milestones)</span>
+            <span>{t('projects.milestones.sectionTitle')}</span>
           </h3>
           <p className="text-xs text-slate-400 mt-0.5">
-            Các mốc quan trọng (Requirement Freeze, Alpha MVP, UAT, Go Live) để định hướng tiến độ.
+            {t('projects.milestones.sectionDesc')}
           </p>
         </div>
 
@@ -253,9 +256,11 @@ export function ProjectMilestonesTab({
       {milestones.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/30 p-8 text-center">
           <Flag className="mx-auto h-8 w-8 text-slate-600" />
-          <p className="mt-2 text-sm text-slate-300 font-medium">Chưa có cột mốc nào</p>
+          <p className="mt-2 text-sm text-slate-300 font-medium">
+            {t('projects.milestones.emptyTitle')}
+          </p>
           <p className="mt-1 text-xs text-slate-500">
-            Tạo các cột mốc quan trọng để dễ dàng gắn kết công việc và theo dõi tiến độ hoàn thành.
+            {t('projects.milestones.emptyDesc')}
           </p>
           <button
             type="button"
@@ -263,7 +268,7 @@ export function ProjectMilestonesTab({
             className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600/30 border border-indigo-500/50 px-3 py-1 text-xs font-medium text-indigo-300 hover:bg-indigo-600/40 transition"
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>Tạo cột mốc đầu tiên</span>
+            <span>{t('projects.milestones.createFirst')}</span>
           </button>
         </div>
       ) : (
@@ -283,7 +288,7 @@ export function ProjectMilestonesTab({
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-xs font-bold text-slate-400 font-mono">#{m.order}</span>
-                    <h4 className="text-sm font-semibold text-white">{m.title}</h4>
+                    <h4 className="text-sm font-semibold text-foreground">{m.title}</h4>
                     {renderStatusBadge(m.status, m.is_overdue)}
                   </div>
                   {m.description ? (
@@ -295,13 +300,13 @@ export function ProjectMilestonesTab({
                 <div className="flex flex-wrap items-center gap-3 text-xs">
                   <div className="flex items-center gap-1 text-slate-400">
                     <Calendar className="h-3.5 w-3.5 text-slate-500" />
-                    <span>Mục tiêu: {m.target_date}</span>
+                    <span>{t('projects.milestones.targetPrefix', { date: m.target_date })}</span>
                   </div>
 
                   {m.completed_date ? (
                     <div className="flex items-center gap-1 text-emerald-400">
                       <CheckCircle2 className="h-3.5 w-3.5" />
-                      <span>Xong: {m.completed_date}</span>
+                      <span>{t('projects.milestones.donePrefix', { date: m.completed_date })}</span>
                     </div>
                   ) : null}
 
@@ -319,7 +324,7 @@ export function ProjectMilestonesTab({
                       <button
                         type="button"
                         onClick={() => void handleQuickComplete(m)}
-                        title="Đánh dấu hoàn thành"
+                        title={t('projects.milestones.markComplete')}
                         className="rounded p-1 text-emerald-400 hover:bg-emerald-950/50 transition"
                       >
                         <CheckCircle2 className="h-4 w-4" />
@@ -328,7 +333,7 @@ export function ProjectMilestonesTab({
                     <button
                       type="button"
                       onClick={() => handleOpenEdit(m)}
-                      title="Chỉnh sửa cột mốc"
+                      title={t('projects.milestones.editTitle')}
                       className="rounded p-1 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition"
                     >
                       <Edit2 className="h-3.5 w-3.5" />
@@ -336,7 +341,7 @@ export function ProjectMilestonesTab({
                     <button
                       type="button"
                       onClick={() => void handleDelete(m.id)}
-                      title="Xóa cột mốc"
+                      title={t('projects.milestones.deleteTitle')}
                       className="rounded p-1 text-red-400 hover:bg-red-950/50 hover:text-red-300 transition"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -353,8 +358,12 @@ export function ProjectMilestonesTab({
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingMilestone ? 'Chỉnh sửa Cột mốc' : 'Tạo Cột mốc mới'}
-        description="Xác lập các điểm mốc quan trọng trong lộ trình hoàn thành dự án."
+        title={
+          editingMilestone
+            ? t('projects.milestones.modalEditTitle')
+            : t('projects.milestones.modalCreateTitle')
+        }
+        description={t('projects.milestones.modalDesc')}
         maxWidth="md"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -366,12 +375,12 @@ export function ProjectMilestonesTab({
 
           <div className="space-y-1">
             <label className="text-xs font-semibold text-slate-300">
-              Tiêu đề cột mốc <span className="text-red-400">*</span>
+              {t('projects.milestones.titleLabel')} <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
               required
-              placeholder="VD: Requirement Freeze, Alpha Release, UAT..."
+              placeholder={t('projects.milestones.titlePlaceholder')}
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -379,10 +388,12 @@ export function ProjectMilestonesTab({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">Mô tả mục tiêu cột mốc</label>
+            <label className="text-xs font-semibold text-slate-300">
+              {t('projects.milestones.descLabel')}
+            </label>
             <textarea
               rows={2}
-              placeholder="Tiêu chí để xem cột mốc này hoàn thành..."
+              placeholder={t('projects.milestones.descPlaceholder')}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -392,7 +403,7 @@ export function ProjectMilestonesTab({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-300">
-                Hạn chót mục tiêu <span className="text-red-400">*</span>
+                {t('projects.milestones.targetDateLabel')} <span className="text-red-400">*</span>
               </label>
               <input
                 type="date"
@@ -404,7 +415,7 @@ export function ProjectMilestonesTab({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Trạng thái</label>
+              <label className="text-xs font-semibold text-slate-300">{t('common.status')}</label>
               <select
                 value={formData.status}
                 onChange={(e) =>
@@ -412,18 +423,20 @@ export function ProjectMilestonesTab({
                 }
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:border-indigo-500 focus:outline-none"
               >
-                <option value="NOT_STARTED">Chưa bắt đầu</option>
-                <option value="IN_PROGRESS">Đang thực hiện</option>
-                <option value="BLOCKED">Bị nghẽn (Blocked)</option>
-                <option value="COMPLETED">Hoàn thành</option>
-                <option value="CANCELLED">Đã hủy</option>
+                {MILESTONE_STATUS_KEYS.map((st) => (
+                  <option key={st} value={st}>
+                    {t(`projects.milestones.statuses.${st}`)}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Thứ tự hiển thị (Order)</label>
+              <label className="text-xs font-semibold text-slate-300">
+                {t('projects.milestones.orderLabel')}
+              </label>
               <input
                 type="number"
                 min="0"
@@ -435,7 +448,9 @@ export function ProjectMilestonesTab({
 
             {editingMilestone && (
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-300">Ngày hoàn thành thực tế</label>
+                <label className="text-xs font-semibold text-slate-300">
+                  {t('projects.milestones.completedDateLabel')}
+                </label>
                 <input
                   type="date"
                   value={formData.completed_date}
@@ -452,7 +467,7 @@ export function ProjectMilestonesTab({
               onClick={() => setIsModalOpen(false)}
               className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800 transition"
             >
-              Hủy
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
@@ -460,10 +475,10 @@ export function ProjectMilestonesTab({
               className="rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 transition disabled:opacity-50"
             >
               {formSubmitting
-                ? 'Đang lưu...'
+                ? t('common.saving')
                 : editingMilestone
-                ? 'Lưu thay đổi'
-                : 'Tạo cột mốc'}
+                ? t('common.saveChanges')
+                : t('projects.milestones.createSubmit')}
             </button>
           </div>
         </form>

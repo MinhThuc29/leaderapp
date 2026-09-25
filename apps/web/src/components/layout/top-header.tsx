@@ -219,7 +219,7 @@ export function TopHeader() {
                   </div>
 
                   {/* User Name */}
-                  <h4 className="mt-2 text-sm font-bold text-white tracking-tight">{userName}</h4>
+                  <h4 className="mt-2 text-sm font-bold text-foreground tracking-tight">{userName}</h4>
 
                   {/* Email with mail icon */}
                   <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
@@ -240,7 +240,7 @@ export function TopHeader() {
                   <Link
                     href="/dashboard"
                     onClick={() => setIsProfileOpen(false)}
-                    className="flex items-center gap-3 w-full rounded-xl px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition"
+                    className="flex items-center gap-3 w-full rounded-xl px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-foreground transition"
                   >
                     <Settings className="h-4 w-4 text-slate-400" />
                     <span>{t('profile.settings')}</span>
@@ -260,7 +260,7 @@ export function TopHeader() {
                         setIsLanguagesSubOpen(!isLanguagesSubOpen);
                         setIsThemeSubOpen(false);
                       }}
-                      className="flex items-center justify-between w-full rounded-xl px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition"
+                      className="flex items-center justify-between w-full rounded-xl px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-foreground transition"
                     >
                       <div className="flex items-center gap-3">
                         <Languages className="h-4 w-4 text-indigo-400" />
@@ -287,7 +287,7 @@ export function TopHeader() {
                                 className={`flex items-center justify-between w-full rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
                                   isActive
                                     ? 'bg-indigo-600/20 text-indigo-300 font-semibold border border-indigo-500/30'
-                                    : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                                    : 'text-slate-300 hover:bg-slate-800/80 hover:text-foreground'
                                 }`}
                               >
                                 <div className="flex items-center gap-2">
@@ -317,7 +317,7 @@ export function TopHeader() {
                         setIsThemeSubOpen(!isThemeSubOpen);
                         setIsLanguagesSubOpen(false);
                       }}
-                      className="flex items-center justify-between w-full rounded-xl px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition"
+                      className="flex items-center justify-between w-full rounded-xl px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-foreground transition"
                     >
                       <div className="flex items-center gap-3">
                         {theme === 'light' ? (
@@ -359,7 +359,7 @@ export function TopHeader() {
                                 className={`flex items-center justify-between w-full rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
                                   isActive
                                     ? 'bg-indigo-600/20 text-indigo-300 font-semibold border border-indigo-500/30'
-                                    : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                                    : 'text-slate-300 hover:bg-slate-800/80 hover:text-foreground'
                                 }`}
                               >
                                 <div className="flex items-center gap-2">
@@ -402,14 +402,14 @@ export function TopHeader() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
           <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                 <HelpCircle className="h-5 w-5 text-indigo-400" />
                 {t('navigation.docs')}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsHelpModalOpen(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-foreground"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -443,14 +443,14 @@ export function TopHeader() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                 <MessageSquare className="h-5 w-5 text-emerald-400" />
                 {t('today.quickNotes')}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsQuickNoteModalOpen(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-foreground"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -461,7 +461,7 @@ export function TopHeader() {
                 onChange={(e) => setQuickNoteText(e.target.value)}
                 placeholder={t('today.typeQuickNote')}
                 rows={4}
-                className="w-full rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-xl border border-border bg-background p-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-brand focus:outline-none"
                 autoFocus
               />
               <div className="flex justify-end gap-2">

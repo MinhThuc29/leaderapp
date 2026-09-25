@@ -59,6 +59,27 @@ const initialFormData: TaskFormData = {
   milestone_id: '',
 };
 
+const TASK_PRIORITY_CLS: Record<Priority, string> = {
+  LOW: 'text-neutral-fg bg-neutral-bg border-neutral-border',
+  MEDIUM: 'text-brand-fg bg-brand-bg border-brand-border',
+  HIGH: 'text-warning-fg bg-warning-bg border-warning-border',
+  CRITICAL: 'text-critical-fg bg-critical-bg border-critical-border',
+};
+
+const TASK_PRIORITY_KEYS = Object.keys(TASK_PRIORITY_CLS) as Priority[];
+/** Priority filter lists the most urgent first, unlike the form select. */
+const FILTER_PRIORITY_KEYS: Priority[] = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
+const TASK_STATUS_KEYS: TaskStatus[] = ['TODO', 'DOING', 'WAITING', 'DONE', 'CANCELLED'];
+const TASK_WEIGHT_KEYS = [1, 2, 3, 4, 5] as const;
+
+/** Kanban board shows the four active states; CANCELLED has no column. */
+const KANBAN_COLUMNS: Array<{ status: TaskStatus; color: string }> = [
+  { status: 'TODO', color: 'border-slate-700' },
+  { status: 'DOING', color: 'border-indigo-700' },
+  { status: 'WAITING', color: 'border-amber-700' },
+  { status: 'DONE', color: 'border-emerald-700' },
+];
+
 export function ProjectTasksTab({
 
   projectId,
@@ -101,11 +122,11 @@ export function ProjectTasksTab({
       setTasks(tasksRes.data);
       setMilestones(milestonesRes.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tải công việc của dự án');
+      setError(err instanceof Error ? err.message : t('tasks.projectTab.loadError'));
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, [projectId, t]);
 
   useEffect(() => {
     void fetchTasksAndMilestones();
@@ -138,7 +159,7 @@ export function ProjectTasksTab({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim()) {
-      setFormError('Tiêu đề công việc không được để trống.');
+      setFormError(t('tasks.titleRequired'));
       return;
     }
 
@@ -185,7 +206,7 @@ export function ProjectTasksTab({
       await fetchTasksAndMilestones();
       onTaskChanged?.();
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Đã có lỗi xảy ra');
+      setFormError(err instanceof Error ? err.message : t('common.genericError'));
     } finally {
       setFormSubmitting(false);
     }
@@ -200,7 +221,7 @@ export function ProjectTasksTab({
       await fetchTasksAndMilestones();
       onTaskChanged?.();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể cập nhật trạng thái');
+      alert(err instanceof Error ? err.message : t('tasks.projectTab.statusUpdateError'));
     }
   };
 
@@ -211,7 +232,7 @@ export function ProjectTasksTab({
       await fetchTasksAndMilestones();
       onTaskChanged?.();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể xóa công việc');
+      alert(err instanceof Error ? err.message : t('tasks.projectTab.deleteError'));
     }
   };
 
@@ -235,32 +256,19 @@ export function ProjectTasksTab({
   }, [tasks, statusFilter, priorityFilter, assigneeFilter, milestoneFilter, overdueOnly, searchQuery]);
 
   const renderPriorityBadge = (p: Priority) => {
-    const config: Record<Priority, { label: string; cls: string }> = {
-      LOW: { label: 'Thấp', cls: 'text-slate-400 bg-slate-800 border-slate-700' },
-      MEDIUM: { label: 'Trung bình', cls: 'text-blue-300 bg-blue-950/70 border-blue-800' },
-      HIGH: { label: 'Cao', cls: 'text-amber-300 bg-amber-950/70 border-amber-800' },
-      CRITICAL: { label: 'Khẩn cấp', cls: 'text-red-300 bg-red-950/80 border-red-800' },
-    };
-    const c = config[p] ?? { label: p, cls: 'text-slate-300 bg-slate-800 border-slate-700' };
+    const cls = TASK_PRIORITY_CLS[p] ?? 'text-neutral-fg bg-neutral-bg border-neutral-border';
     return (
-      <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold border ${c.cls}`}>
-        {c.label}
+      <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold border ${cls}`}>
+        {t(`tasks.priority.${p}`, { defaultValue: p })}
       </span>
     );
   };
-
-  const kanbanColumns: Array<{ status: TaskStatus; title: string; color: string }> = [
-    { status: 'TODO', title: 'Cần làm (TODO)', color: 'border-slate-700' },
-    { status: 'DOING', title: 'Đang làm (DOING)', color: 'border-indigo-700' },
-    { status: 'WAITING', title: 'Đang chờ (WAITING)', color: 'border-amber-700' },
-    { status: 'DONE', title: 'Hoàn thành (DONE)', color: 'border-emerald-700' },
-  ];
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-slate-400">
         <div className="w-7 h-7 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-2" />
-        <p className="text-xs">Đang tải danh sách công việc...</p>
+        <p className="text-xs">{t('tasks.projectTab.loading')}</p>
       </div>
     );
   }
@@ -270,12 +278,14 @@ export function ProjectTasksTab({
       {/* Top action & View toggle */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
             <CheckSquare className="h-4 w-4 text-indigo-400" />
-            <span>Công việc dự án (Tasks - {tasks.length})</span>
+            <span>{t('tasks.projectTab.sectionTitle', { count: tasks.length })}</span>
           </h3>
           <p className="text-xs text-slate-400 mt-0.5">
-            Khi công việc chuyển sang <span className="text-emerald-400 font-semibold">DONE</span>, tiến độ dự án sẽ tự động tăng theo trọng số (Weight 1-5).
+            {t('tasks.projectTab.descBefore')}{' '}
+            <span className="text-emerald-400 font-semibold">DONE</span>
+            {t('tasks.projectTab.descAfter')}
           </p>
         </div>
 
@@ -290,7 +300,7 @@ export function ProjectTasksTab({
               }`}
             >
               <List className="h-3.5 w-3.5" />
-              <span>Bảng</span>
+              <span>{t('common.table')}</span>
             </button>
             <button
               type="button"
@@ -310,7 +320,7 @@ export function ProjectTasksTab({
             className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 transition"
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>Thêm công việc</span>
+            <span>{t('tasks.projectTab.addTask')}</span>
           </button>
         </div>
       </div>
@@ -321,7 +331,7 @@ export function ProjectTasksTab({
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
           <input
             type="text"
-            placeholder="Tìm theo tên task..."
+            placeholder={t('tasks.projectTab.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-md border border-slate-700 bg-slate-950 pl-8 pr-3 py-1 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -334,12 +344,12 @@ export function ProjectTasksTab({
           onChange={(e) => setStatusFilter(e.target.value)}
           className="rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-slate-200 focus:outline-none"
         >
-          <option value="ALL">Tất cả trạng thái</option>
-          <option value="TODO">Cần làm (TODO)</option>
-          <option value="DOING">Đang làm (DOING)</option>
-          <option value="WAITING">Đang chờ (WAITING)</option>
-          <option value="DONE">Hoàn thành (DONE)</option>
-          <option value="CANCELLED">Đã hủy</option>
+          <option value="ALL">{t('tasks.projectTab.allStatuses')}</option>
+          {TASK_STATUS_KEYS.map((s) => (
+            <option key={s} value={s}>
+              {t(`tasks.statusFilterOptions.${s}`, { defaultValue: s })}
+            </option>
+          ))}
         </select>
 
         {/* Priority filter */}
@@ -348,11 +358,12 @@ export function ProjectTasksTab({
           onChange={(e) => setPriorityFilter(e.target.value)}
           className="rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-slate-200 focus:outline-none"
         >
-          <option value="ALL">Tất cả ưu tiên</option>
-          <option value="CRITICAL">Khẩn cấp (Critical)</option>
-          <option value="HIGH">Cao (High)</option>
-          <option value="MEDIUM">Trung bình (Medium)</option>
-          <option value="LOW">Thấp (Low)</option>
+          <option value="ALL">{t('tasks.projectTab.allPriorities')}</option>
+          {FILTER_PRIORITY_KEYS.map((p) => (
+            <option key={p} value={p}>
+              {t(`tasks.priorityOptions.${p}`, { defaultValue: p })}
+            </option>
+          ))}
         </select>
 
         {/* Milestone filter */}
@@ -362,7 +373,7 @@ export function ProjectTasksTab({
             onChange={(e) => setMilestoneFilter(e.target.value)}
             className="rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-slate-200 focus:outline-none"
           >
-            <option value="ALL">Tất cả cột mốc</option>
+            <option value="ALL">{t('tasks.projectTab.allMilestones')}</option>
             {milestones.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.title}
@@ -378,7 +389,7 @@ export function ProjectTasksTab({
             onChange={(e) => setAssigneeFilter(e.target.value)}
             className="rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-slate-200 focus:outline-none"
           >
-            <option value="ALL">Tất cả nhân sự</option>
+            <option value="ALL">{t('tasks.projectTab.allMembers')}</option>
             {projectMembers.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.name}
@@ -398,7 +409,7 @@ export function ProjectTasksTab({
           }`}
         >
           <AlertTriangle className="h-3 w-3" />
-          <span>Quá hạn</span>
+          <span>{t('tasks.projectTab.overdue')}</span>
         </button>
       </div>
 
@@ -412,11 +423,13 @@ export function ProjectTasksTab({
       {filteredTasks.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/30 p-8 text-center">
           <CheckSquare className="mx-auto h-8 w-8 text-slate-600" />
-          <p className="mt-2 text-sm text-slate-300 font-medium">Không tìm thấy công việc nào</p>
+          <p className="mt-2 text-sm text-slate-300 font-medium">
+            {t('tasks.projectTab.emptyTitle')}
+          </p>
           <p className="mt-1 text-xs text-slate-500">
             {searchQuery || statusFilter !== 'ALL' || priorityFilter !== 'ALL'
-              ? 'Không có công việc khớp với bộ lọc hiện tại.'
-              : 'Hãy tạo công việc đầu tiên và gắn trọng số để kích hoạt tính tiến độ tự động.'}
+              ? t('tasks.projectTab.emptyFiltered')
+              : t('tasks.projectTab.emptyDesc')}
           </p>
         </div>
       ) : viewMode === 'table' ? (
@@ -425,35 +438,37 @@ export function ProjectTasksTab({
           <table className="min-w-full divide-y divide-slate-800 text-left text-xs">
             <thead className="bg-slate-950/80 font-semibold uppercase text-slate-400">
               <tr>
-                <th className="px-4 py-3">Công việc</th>
-                <th className="px-3 py-3">Ưu tiên & Trọng số</th>
-                <th className="px-3 py-3">Trạng thái</th>
-                <th className="px-3 py-3">Hạn chót</th>
-                <th className="px-3 py-3">Phụ trách</th>
-                <th className="px-3 py-3">Cột mốc</th>
-                <th className="px-3 py-3 text-right">Thao tác</th>
+                <th className="px-4 py-3">{t('tasks.projectTab.colTask')}</th>
+                <th className="px-3 py-3">{t('tasks.projectTab.colPriorityWeight')}</th>
+                <th className="px-3 py-3">{t('tasks.projectTab.colStatus')}</th>
+                <th className="px-3 py-3">{t('tasks.projectTab.colDue')}</th>
+                <th className="px-3 py-3">{t('tasks.projectTab.colAssignee')}</th>
+                <th className="px-3 py-3">{t('tasks.projectTab.colMilestone')}</th>
+                <th className="px-3 py-3 text-right">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
-              {filteredTasks.map((t) => (
-                <tr key={t.id} className="hover:bg-slate-800/40 transition">
+              {filteredTasks.map((item) => (
+                <tr key={item.id} className="hover:bg-slate-800/40 transition">
                   {/* Title & Description */}
                   <td className="px-4 py-3 max-w-sm">
-                    <div className="font-semibold text-white">{t.title}</div>
-                    {t.description && (
-                      <p className="text-[11px] text-slate-400 truncate mt-0.5">{t.description}</p>
+                    <div className="font-semibold text-foreground">{item.title}</div>
+                    {item.description && (
+                      <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                        {item.description}
+                      </p>
                     )}
                   </td>
 
                   {/* Priority & Weight */}
                   <td className="px-3 py-3 whitespace-nowrap">
                     <div className="flex items-center gap-1.5">
-                      {renderPriorityBadge(t.priority)}
+                      {renderPriorityBadge(item.priority)}
                       <span
                         className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-mono bg-slate-800 text-indigo-300 border border-slate-700"
-                        title="Trọng số công việc (1-5)"
+                        title={t('tasks.projectTab.weightTitle')}
                       >
-                        <Scale className="h-2.5 w-2.5" /> w:{t.weight}
+                        <Scale className="h-2.5 w-2.5" /> w:{item.weight}
                       </span>
                     </div>
                   </td>
@@ -461,40 +476,42 @@ export function ProjectTasksTab({
                   {/* Status Dropdown */}
                   <td className="px-3 py-3 whitespace-nowrap">
                     <select
-                      value={t.status}
-                      onChange={(e) => void handleStatusChange(t.id, e.target.value as TaskStatus)}
+                      value={item.status}
+                      onChange={(e) =>
+                        void handleStatusChange(item.id, e.target.value as TaskStatus)
+                      }
                       className={`rounded px-2 py-0.5 text-[11px] font-medium border focus:outline-none ${
-                        t.status === 'DONE'
+                        item.status === 'DONE'
                           ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
-                          : t.status === 'DOING'
+                          : item.status === 'DOING'
                           ? 'bg-indigo-950 text-indigo-300 border-indigo-800'
-                          : t.status === 'WAITING'
+                          : item.status === 'WAITING'
                           ? 'bg-amber-950 text-amber-300 border-amber-800'
-                          : t.status === 'CANCELLED'
+                          : item.status === 'CANCELLED'
                           ? 'bg-red-950 text-red-300 border-red-800'
                           : 'bg-slate-800 text-slate-300 border-slate-700'
                       }`}
                     >
-                      <option value="TODO">TODO</option>
-                      <option value="DOING">DOING</option>
-                      <option value="WAITING">WAITING</option>
-                      <option value="DONE">DONE</option>
-                      <option value="CANCELLED">CANCELLED</option>
+                      {TASK_STATUS_KEYS.map((s) => (
+                        <option key={s} value={s}>
+                          {t(`tasks.statusShort.${s}`, { defaultValue: s })}
+                        </option>
+                      ))}
                     </select>
                   </td>
 
                   {/* Due Date & Overdue */}
                   <td className="px-3 py-3 whitespace-nowrap">
-                    {t.due_date ? (
+                    {item.due_date ? (
                       <div
                         className={`flex items-center gap-1 ${
-                          t.is_overdue ? 'text-red-400 font-semibold' : 'text-slate-400'
+                          item.is_overdue ? 'text-red-400 font-semibold' : 'text-slate-400'
                         }`}
                       >
-                        {t.is_overdue && <AlertTriangle className="h-3 w-3" />}
+                        {item.is_overdue && <AlertTriangle className="h-3 w-3" />}
                         <Calendar className="h-3 w-3 text-slate-500" />
-                        <span>{t.due_date}</span>
-                        {t.due_time && <span className="text-[10px]">({t.due_time})</span>}
+                        <span>{item.due_date}</span>
+                        {item.due_time && <span className="text-[10px]">({item.due_time})</span>}
                       </div>
                     ) : (
                       <span className="text-slate-600">—</span>
@@ -503,12 +520,12 @@ export function ProjectTasksTab({
 
                   {/* Assignee */}
                   <td className="px-3 py-3 whitespace-nowrap text-slate-300">
-                    {t.assignee ? (
+                    {item.assignee ? (
                       <div className="flex items-center gap-1.5">
                         <div className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-900 text-[10px] text-indigo-200">
-                          {t.assignee.name.charAt(0).toUpperCase()}
+                          {item.assignee.name.charAt(0).toUpperCase()}
                         </div>
-                        <span className="text-xs">{t.assignee.name}</span>
+                        <span className="text-xs">{item.assignee.name}</span>
                       </div>
                     ) : (
                       <span className="text-slate-600">—</span>
@@ -517,10 +534,10 @@ export function ProjectTasksTab({
 
                   {/* Milestone */}
                   <td className="px-3 py-3 whitespace-nowrap">
-                    {t.milestone ? (
+                    {item.milestone ? (
                       <span className="inline-flex items-center gap-1 rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-300 border border-slate-700">
                         <Flag className="h-2.5 w-2.5 text-indigo-400" />
-                        {t.milestone.title}
+                        {item.milestone.title}
                       </span>
                     ) : (
                       <span className="text-slate-600">—</span>
@@ -532,16 +549,16 @@ export function ProjectTasksTab({
                     <div className="inline-flex items-center gap-1">
                       <button
                         type="button"
-                        onClick={() => handleOpenEdit(t)}
-                        title="Sửa công việc"
+                        onClick={() => handleOpenEdit(item)}
+                        title={t('tasks.projectTab.editTitle')}
                         className="rounded p-1 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition"
                       >
                         <Edit2 className="h-3.5 w-3.5" />
                       </button>
                       <button
                         type="button"
-                        onClick={() => void handleDelete(t.id)}
-                        title="Xóa công việc"
+                        onClick={() => void handleDelete(item.id)}
+                        title={t('tasks.projectTab.deleteTitle')}
                         className="rounded p-1 text-red-400 hover:bg-red-950/50 hover:text-red-300 transition"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -556,15 +573,17 @@ export function ProjectTasksTab({
       ) : (
         /* KANBAN VIEW */
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          {kanbanColumns.map((col) => {
-            const colTasks = filteredTasks.filter((t) => t.status === col.status);
+          {KANBAN_COLUMNS.map((col) => {
+            const colTasks = filteredTasks.filter((item) => item.status === col.status);
             return (
               <div
                 key={col.status}
                 className="flex flex-col rounded-xl border border-slate-800 bg-slate-950/60 p-3"
               >
                 <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800/80">
-                  <span className="text-xs font-semibold text-slate-300">{col.title}</span>
+                  <span className="text-xs font-semibold text-slate-300">
+                    {t(`tasks.kanbanColumns.${col.status}`, { defaultValue: col.status })}
+                  </span>
                   <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-mono text-slate-400">
                     {colTasks.length}
                   </span>
@@ -572,71 +591,74 @@ export function ProjectTasksTab({
 
                 <div className="space-y-2 flex-1 overflow-y-auto max-h-[500px]">
                   {colTasks.length === 0 ? (
-                    <div className="py-6 text-center text-xs text-slate-600">Trống</div>
+                    <div className="py-6 text-center text-xs text-slate-600">
+                      {t('tasks.projectTab.kanbanEmpty')}
+                    </div>
                   ) : (
-                    colTasks.map((t) => (
+                    colTasks.map((item) => (
                       <div
-                        key={t.id}
+                        key={item.id}
                         className={`rounded-lg border p-2.5 text-xs transition ${
-                          t.is_overdue
+                          item.is_overdue
                             ? 'border-red-900/80 bg-red-950/20'
                             : 'border-slate-800 bg-slate-900 hover:border-slate-700'
                         }`}
                       >
                         <div className="flex items-center justify-between gap-1 mb-1">
-                          {renderPriorityBadge(t.priority)}
+                          {renderPriorityBadge(item.priority)}
                           <span className="font-mono text-[10px] text-indigo-400">
-                            w:{t.weight}
+                            w:{item.weight}
                           </span>
                         </div>
 
-                        <div className="font-semibold text-white mb-1.5">{t.title}</div>
+                        <div className="font-semibold text-foreground mb-1.5">{item.title}</div>
 
                         <div className="space-y-1 text-[11px] text-slate-400">
-                          {t.due_date && (
+                          {item.due_date && (
                             <div
                               className={`flex items-center gap-1 ${
-                                t.is_overdue ? 'text-red-400 font-semibold' : ''
+                                item.is_overdue ? 'text-red-400 font-semibold' : ''
                               }`}
                             >
                               <Clock className="h-3 w-3" />
-                              <span>{t.due_date}</span>
+                              <span>{item.due_date}</span>
                             </div>
                           )}
 
-                          {t.assignee && (
+                          {item.assignee && (
                             <div className="flex items-center gap-1 text-slate-300">
                               <User className="h-3 w-3 text-slate-500" />
-                              <span>{t.assignee.name}</span>
+                              <span>{item.assignee.name}</span>
                             </div>
                           )}
                         </div>
 
                         <div className="mt-2 pt-2 border-t border-slate-800/80 flex items-center justify-between">
                           <select
-                            value={t.status}
+                            value={item.status}
                             onChange={(e) =>
-                              void handleStatusChange(t.id, e.target.value as TaskStatus)
+                              void handleStatusChange(item.id, e.target.value as TaskStatus)
                             }
                             className="rounded bg-slate-950 border border-slate-700 text-[10px] px-1 py-0.5 text-slate-300"
                           >
-                            <option value="TODO">TODO</option>
-                            <option value="DOING">DOING</option>
-                            <option value="WAITING">WAITING</option>
-                            <option value="DONE">DONE</option>
+                            {KANBAN_COLUMNS.map((c) => (
+                              <option key={c.status} value={c.status}>
+                                {t(`tasks.statusShort.${c.status}`, { defaultValue: c.status })}
+                              </option>
+                            ))}
                           </select>
 
                           <div className="flex items-center gap-1">
                             <button
                               type="button"
-                              onClick={() => handleOpenEdit(t)}
+                              onClick={() => handleOpenEdit(item)}
                               className="text-slate-400 hover:text-slate-200 p-0.5"
                             >
                               <Edit2 className="h-3 w-3" />
                             </button>
                             <button
                               type="button"
-                              onClick={() => void handleDelete(t.id)}
+                              onClick={() => void handleDelete(item.id)}
                               className="text-red-400 hover:text-red-300 p-0.5"
                             >
                               <Trash2 className="h-3 w-3" />
@@ -657,8 +679,12 @@ export function ProjectTasksTab({
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingTask ? 'Chỉnh sửa Công việc' : 'Tạo Công việc mới'}
-        description="Thiết lập chi tiết công việc, trọng số và người phụ trách."
+        title={
+          editingTask
+            ? t('tasks.projectTab.modalEditTitle')
+            : t('tasks.projectTab.modalCreateTitle')
+        }
+        description={t('tasks.projectTab.modalDesc')}
         maxWidth="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -670,12 +696,12 @@ export function ProjectTasksTab({
 
           <div className="space-y-1">
             <label className="text-xs font-semibold text-slate-300">
-              Tiêu đề công việc <span className="text-red-400">*</span>
+              {t('tasks.titleLabel')} <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
               required
-              placeholder="VD: Viết unit test cho auth service..."
+              placeholder={t('tasks.projectTab.titlePlaceholder')}
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -683,10 +709,10 @@ export function ProjectTasksTab({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">Mô tả chi tiết</label>
+            <label className="text-xs font-semibold text-slate-300">{t('tasks.descLabel')}</label>
             <textarea
               rows={2}
-              placeholder="Mô tả các yêu cầu kỹ thuật hoặc acceptance criteria..."
+              placeholder={t('tasks.projectTab.descPlaceholder')}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -695,7 +721,9 @@ export function ProjectTasksTab({
 
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Độ ưu tiên</label>
+              <label className="text-xs font-semibold text-slate-300">
+                {t('tasks.priorityLabel')}
+              </label>
               <select
                 value={formData.priority}
                 onChange={(e) =>
@@ -703,15 +731,16 @@ export function ProjectTasksTab({
                 }
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:outline-none"
               >
-                <option value="LOW">Thấp (Low)</option>
-                <option value="MEDIUM">Trung bình (Medium)</option>
-                <option value="HIGH">Cao (High)</option>
-                <option value="CRITICAL">Khẩn cấp (Critical)</option>
+                {TASK_PRIORITY_KEYS.map((p) => (
+                  <option key={p} value={p}>
+                    {t(`tasks.priorityOptions.${p}`, { defaultValue: p })}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Trạng thái</label>
+              <label className="text-xs font-semibold text-slate-300">{t('common.status')}</label>
               <select
                 value={formData.status}
                 onChange={(e) =>
@@ -719,35 +748,38 @@ export function ProjectTasksTab({
                 }
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:outline-none"
               >
-                <option value="TODO">Cần làm (TODO)</option>
-                <option value="DOING">Đang làm (DOING)</option>
-                <option value="WAITING">Đang chờ (WAITING)</option>
-                <option value="DONE">Hoàn thành (DONE)</option>
-                <option value="CANCELLED">Đã hủy</option>
+                {TASK_STATUS_KEYS.map((s) => (
+                  <option key={s} value={s}>
+                    {t(`tasks.statusFormOptions.${s}`, { defaultValue: s })}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-300">
-                Trọng số tính tiến độ (Weight): <span className="font-mono text-indigo-400">{formData.weight}</span>
+                {t('tasks.projectTab.weightLabel')}:{' '}
+                <span className="font-mono text-indigo-400">{formData.weight}</span>
               </label>
               <select
                 value={formData.weight}
                 onChange={(e) => setFormData({ ...formData, weight: Number(e.target.value) })}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:outline-none font-mono"
               >
-                <option value={1}>1 - Nhỏ / Tác vụ nhanh</option>
-                <option value={2}>2 - Trung bình</option>
-                <option value={3}>3 - Quan trọng</option>
-                <option value={4}>4 - Lớn / Phức tạp</option>
-                <option value={5}>5 - Cốt lõi / Epic</option>
+                {TASK_WEIGHT_KEYS.map((w) => (
+                  <option key={w} value={w}>
+                    {t(`tasks.projectTab.weightOptions.${w}`, { defaultValue: String(w) })}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Hạn chót (Due date)</label>
+              <label className="text-xs font-semibold text-slate-300">
+                {t('tasks.projectTab.dueDateLabel')}
+              </label>
               <input
                 type="date"
                 value={formData.due_date}
@@ -757,7 +789,9 @@ export function ProjectTasksTab({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Giờ hạn chót</label>
+              <label className="text-xs font-semibold text-slate-300">
+                {t('tasks.projectTab.dueTimeLabel')}
+              </label>
               <input
                 type="time"
                 value={formData.due_time}
@@ -769,13 +803,15 @@ export function ProjectTasksTab({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Thành viên phụ trách</label>
+              <label className="text-xs font-semibold text-slate-300">
+                {t('tasks.projectTab.assigneeLabel')}
+              </label>
               <select
                 value={formData.member_id}
                 onChange={(e) => setFormData({ ...formData, member_id: e.target.value })}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:outline-none"
               >
-                <option value="">-- Chưa chỉ định --</option>
+                <option value="">{t('tasks.projectTab.assigneeNone')}</option>
                 {projectMembers.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.name} ({m.role})
@@ -785,13 +821,15 @@ export function ProjectTasksTab({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Gắn vào Cột mốc (Milestone)</label>
+              <label className="text-xs font-semibold text-slate-300">
+                {t('tasks.projectTab.milestoneLabel')}
+              </label>
               <select
                 value={formData.milestone_id}
                 onChange={(e) => setFormData({ ...formData, milestone_id: e.target.value })}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:outline-none"
               >
-                <option value="">-- Không gắn cột mốc --</option>
+                <option value="">{t('tasks.projectTab.milestoneNone')}</option>
                 {milestones.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.title}
@@ -807,7 +845,7 @@ export function ProjectTasksTab({
               onClick={() => setIsModalOpen(false)}
               className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800 transition"
             >
-              Hủy
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
@@ -815,10 +853,10 @@ export function ProjectTasksTab({
               className="rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 transition disabled:opacity-50"
             >
               {formSubmitting
-                ? 'Đang lưu...'
+                ? t('common.saving')
                 : editingTask
-                ? 'Lưu thay đổi'
-                : 'Tạo công việc'}
+                ? t('common.saveChanges')
+                : t('tasks.projectTab.submitCreate')}
             </button>
           </div>
         </form>

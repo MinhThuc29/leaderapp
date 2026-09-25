@@ -89,12 +89,12 @@ function TodayCockpitContent() {
       setTodayData(res.data);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Không thể tải dữ liệu hôm nay',
+        err instanceof Error ? err.message : t('today.loadError'),
       );
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   // Fetch projects and members for dropdowns
   const fetchAuxiliary = useCallback(async () => {
@@ -123,12 +123,12 @@ function TodayCockpitContent() {
         method: 'PATCH',
         body: JSON.stringify({
           status: nextStatus,
-          note: nextStatus === 'DONE' ? 'Hoàn thành từ trang Hôm nay' : undefined,
+          note: nextStatus === 'DONE' ? t('today.doneFromTodayNote') : undefined,
         }),
       });
       await fetchTodayData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể đổi trạng thái');
+      alert(err instanceof Error ? err.message : t('today.statusChangeError'));
     }
   };
 
@@ -147,7 +147,7 @@ function TodayCockpitContent() {
       });
       await fetchTodayData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể dời hạn công việc');
+      alert(err instanceof Error ? err.message : t('today.rescheduleError'));
     }
   };
 
@@ -167,7 +167,7 @@ function TodayCockpitContent() {
       await fetchTodayData();
       setTimeout(() => setRescheduleMsg(null), 4000);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể dời hạn công việc');
+      alert(err instanceof Error ? err.message : t('today.rescheduleError'));
     } finally {
       setIsRescheduling(false);
     }
@@ -197,7 +197,7 @@ function TodayCockpitContent() {
       setTaskTitle('');
       await fetchTodayData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể tạo công việc');
+      alert(err instanceof Error ? err.message : t('today.createTaskError'));
     } finally {
       setTaskSubmitting(false);
     }
@@ -228,7 +228,7 @@ function TodayCockpitContent() {
           : prev,
       );
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể lưu ghi chú');
+      alert(err instanceof Error ? err.message : t('today.saveNoteError'));
     } finally {
       setNoteSubmitting(false);
     }
@@ -247,7 +247,7 @@ function TodayCockpitContent() {
           : prev,
       );
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể xóa ghi chú');
+      alert(err instanceof Error ? err.message : t('today.deleteNoteError'));
     }
   };
 
@@ -255,7 +255,7 @@ function TodayCockpitContent() {
   const handleQuickFollowUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!followUpTitle.trim() || !followUpWaitingFor.trim()) {
-      alert('Vui lòng nhập nội dung và người cần chờ phản hồi');
+      alert(t('today.followUpValidation'));
       return;
     }
 
@@ -288,7 +288,7 @@ function TodayCockpitContent() {
       setIsAddFollowUpOpen(false);
       await fetchTodayData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể tạo follow-up');
+      alert(err instanceof Error ? err.message : t('today.createFollowUpError'));
     } finally {
       setFollowUpSubmitting(false);
     }
@@ -303,7 +303,7 @@ function TodayCockpitContent() {
       });
       await fetchTodayData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể cập nhật follow-up');
+      alert(err instanceof Error ? err.message : t('today.updateFollowUpError'));
     }
   };
 
@@ -311,26 +311,26 @@ function TodayCockpitContent() {
     switch (p) {
       case 'CRITICAL':
         return (
-          <span className="rounded bg-rose-950 text-rose-300 border border-rose-800/80 px-1.5 py-0.2 text-[10px] font-bold">
+          <span className="rounded bg-critical-bg text-critical-fg border border-critical-border px-1.5 py-0.2 text-[10px] font-bold">
             {t('tasks.priority.CRITICAL')}
           </span>
         );
       case 'HIGH':
         return (
-          <span className="rounded bg-amber-950 text-amber-300 border border-amber-800/80 px-1.5 py-0.2 text-[10px] font-bold">
+          <span className="rounded bg-warning-bg text-warning-fg border border-warning-border px-1.5 py-0.2 text-[10px] font-bold">
             {t('tasks.priority.HIGH')}
           </span>
         );
       case 'MEDIUM':
         return (
-          <span className="rounded bg-indigo-950 text-indigo-300 border border-indigo-800/80 px-1.5 py-0.2 text-[10px]">
+          <span className="rounded bg-brand-bg text-brand-fg border border-brand-border px-1.5 py-0.2 text-[10px]">
             {t('tasks.priority.MEDIUM')}
           </span>
         );
       case 'LOW':
       default:
         return (
-          <span className="rounded bg-slate-800 text-slate-400 border border-slate-700 px-1.5 py-0.2 text-[10px]">
+          <span className="rounded bg-neutral-bg text-neutral-fg border border-neutral-border px-1.5 py-0.2 text-[10px]">
             {t('tasks.priority.LOW')}
           </span>
         );
@@ -355,7 +355,7 @@ function TodayCockpitContent() {
         <button
           type="button"
           onClick={() => void fetchTodayData()}
-          className="mt-4 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-white rounded-lg transition"
+          className="mt-4 px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-xs text-foreground rounded-lg transition"
         >
           {t('common.refresh')}
         </button>
@@ -389,7 +389,7 @@ function TodayCockpitContent() {
               <SunMedium className="h-3.5 w-3.5 text-amber-400" />
               <span>{formatted_date}</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
               <span>{t('today.headerQuestion')}</span>
             </h1>
             <p className="mt-1 text-xs text-slate-300">
@@ -799,7 +799,7 @@ function TodayCockpitContent() {
                   <input
                     type="text"
                     required
-                    placeholder="VD: Báo giá linh kiện, review PR..."
+                    placeholder={t('today.followUpContentExample')}
                     value={followUpTitle}
                     onChange={(e) => setFollowUpTitle(e.target.value)}
                     className="w-full rounded border border-slate-700 bg-slate-900 px-2.5 py-1 text-xs text-slate-100 focus:outline-none"
@@ -813,7 +813,7 @@ function TodayCockpitContent() {
                   <input
                     type="text"
                     required
-                    placeholder="VD: Khách hàng A, Vendor, Thành viên..."
+                    placeholder={t('today.followUpWhoExample')}
                     value={followUpWaitingFor}
                     onChange={(e) => setFollowUpWaitingFor(e.target.value)}
                     className="w-full rounded border border-slate-700 bg-slate-900 px-2.5 py-1 text-xs text-slate-100 focus:outline-none"

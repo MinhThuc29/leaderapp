@@ -43,6 +43,22 @@ interface ProjectFormData {
   leader_note: string;
 }
 
+const PROJECT_STATUS_CLS: Record<ProjectStatus, string> = {
+  PLANNING: 'bg-info-bg text-info-fg border-info-border',
+  ACTIVE: 'bg-brand-bg text-brand-fg border-brand-border',
+  ON_HOLD: 'bg-neutral-bg text-neutral-fg border-neutral-border',
+  AT_RISK: 'bg-warning-bg text-warning-fg border-warning-border',
+  COMPLETED: 'bg-success-bg text-success-fg border-success-border',
+  CANCELLED: 'bg-danger-bg text-danger-fg border-danger-border',
+};
+
+/** Status choices offered when creating a project (COMPLETED/CANCELLED are not initial states). */
+const CREATE_STATUS_KEYS: ProjectStatus[] = ['PLANNING', 'ACTIVE', 'ON_HOLD', 'AT_RISK'];
+
+const HEALTH_KEYS: HealthStatus[] = ['GREEN', 'YELLOW', 'RED'];
+
+const PRIORITY_KEYS: Priority[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+
 const initialFormData: ProjectFormData = {
   name: '',
   code: '',
@@ -79,11 +95,11 @@ function ProjectsContent() {
       const res = await apiClient<ProjectDto[]>('/projects');
       setProjects(res.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tải danh sách dự án');
+      setError(err instanceof Error ? err.message : t('projects.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void fetchProjects();
@@ -126,7 +142,7 @@ function ProjectsContent() {
       setIsModalOpen(false);
       await fetchProjects();
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Đã có lỗi xảy ra khi tạo dự án');
+      setFormError(err instanceof Error ? err.message : t('projects.createError'));
     } finally {
       setFormSubmitting(false);
     }
@@ -155,22 +171,22 @@ function ProjectsContent() {
     switch (health) {
       case 'GREEN':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/80">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-success-fg bg-success-bg px-2 py-0.5 rounded border border-success-border">
+            <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
             {t('projects.health.GREEN')}
           </span>
         );
       case 'YELLOW':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/80">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-warning-fg bg-warning-bg px-2 py-0.5 rounded border border-warning-border">
+            <span className="h-1.5 w-1.5 rounded-full bg-warning" />
             {t('projects.health.YELLOW')}
           </span>
         );
       case 'RED':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-400 bg-red-950/60 px-2 py-0.5 rounded border border-red-800/80">
-            <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-ping" />
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-danger-fg bg-danger-bg px-2 py-0.5 rounded border border-danger-border">
+            <span className="h-1.5 w-1.5 rounded-full bg-danger animate-ping" />
             {t('projects.health.RED')}
           </span>
         );
@@ -178,18 +194,11 @@ function ProjectsContent() {
   };
 
   const renderStatusBadge = (status: ProjectStatus) => {
-    const config: Record<ProjectStatus, { label: string; color: string }> = {
-      PLANNING: { label: 'Lập kế hoạch', color: 'bg-blue-950 text-blue-300 border-blue-800' },
-      ACTIVE: { label: 'Đang chạy', color: 'bg-indigo-950 text-indigo-300 border-indigo-800' },
-      ON_HOLD: { label: 'Tạm hoãn', color: 'bg-slate-800 text-slate-300 border-slate-700' },
-      AT_RISK: { label: 'Có rủi ro', color: 'bg-amber-950 text-amber-300 border-amber-800' },
-      COMPLETED: { label: 'Hoàn thành', color: 'bg-emerald-950 text-emerald-300 border-emerald-800' },
-      CANCELLED: { label: 'Đã hủy', color: 'bg-red-950 text-red-300 border-red-800' },
-    };
-    const c = config[status] ?? { label: status, color: 'bg-slate-800 text-slate-300 border-slate-700' };
+    const color =
+      PROJECT_STATUS_CLS[status] ?? 'bg-neutral-bg text-neutral-fg border-neutral-border';
     return (
-      <span className={`inline-block text-[11px] font-medium px-2 py-0.5 rounded border ${c.color}`}>
-        {c.label}
+      <span className={`inline-block text-[11px] font-medium px-2 py-0.5 rounded border ${color}`}>
+        {t(`projects.status.${status}`, { defaultValue: status })}
       </span>
     );
   };
@@ -199,7 +208,7 @@ function ProjectsContent() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
             <FolderKanban className="h-6 w-6 text-indigo-400" />
             <span>{t('projects.title')}</span>
           </h1>
@@ -241,11 +250,11 @@ function ProjectsContent() {
               className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1 text-slate-200 focus:border-indigo-500 focus:outline-none"
             >
               <option value="ALL">{t('projects.allStatuses')} ({projects.length})</option>
-              <option value="ACTIVE">Đang chạy</option>
-              <option value="PLANNING">Lập kế hoạch</option>
-              <option value="AT_RISK">Có rủi ro</option>
-              <option value="ON_HOLD">Tạm hoãn</option>
-              <option value="COMPLETED">Hoàn thành</option>
+              <option value="ACTIVE">{t('projects.status.ACTIVE')}</option>
+              <option value="PLANNING">{t('projects.status.PLANNING')}</option>
+              <option value="AT_RISK">{t('projects.status.AT_RISK')}</option>
+              <option value="ON_HOLD">{t('projects.status.ON_HOLD')}</option>
+              <option value="COMPLETED">{t('projects.status.COMPLETED')}</option>
             </select>
           </div>
 
@@ -258,9 +267,11 @@ function ProjectsContent() {
               className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1 text-slate-200 focus:border-indigo-500 focus:outline-none"
             >
               <option value="ALL">{t('projects.allHealth')}</option>
-              <option value="GREEN">Khỏe mạnh (Xanh)</option>
-              <option value="YELLOW">Cần chú ý (Vàng)</option>
-              <option value="RED">Nguy cấp (Đỏ)</option>
+              {HEALTH_KEYS.map((h) => (
+                <option key={h} value={h}>
+                  {t(`projects.healthOptions.${h}`)}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -270,7 +281,7 @@ function ProjectsContent() {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16 text-slate-400">
           <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-3" />
-          <p className="text-sm">Đang tải danh sách dự án...</p>
+          <p className="text-sm">{t('projects.loading')}</p>
         </div>
       ) : error ? (
         <div className="rounded-xl border border-red-900/60 bg-red-950/40 p-6 text-center text-red-300">
@@ -279,7 +290,7 @@ function ProjectsContent() {
           <button
             type="button"
             onClick={() => void fetchProjects()}
-            className="mt-4 px-4 py-1.5 text-xs bg-red-900/60 hover:bg-red-800 text-white rounded-lg transition"
+            className="mt-4 px-4 py-1.5 text-xs bg-danger text-white rounded-lg transition hover:opacity-90"
           >
             {t('common.refresh')}
           </button>
@@ -290,8 +301,8 @@ function ProjectsContent() {
           <h3 className="mt-3 text-base font-semibold text-slate-300">{t('projects.noProjectsFound')}</h3>
           <p className="mt-1 text-sm text-slate-500">
             {searchQuery || statusFilter !== 'ALL' || healthFilter !== 'ALL'
-              ? 'Không có dự án phù hợp với bộ lọc hiện tại.'
-              : 'Bắt đầu khởi tạo dự án đầu tiên để theo dõi tiến độ và điều phối thành viên.'}
+              ? t('projects.emptyFiltered')
+              : t('projects.emptyDesc')}
           </p>
           {!searchQuery && statusFilter === 'ALL' && healthFilter === 'ALL' && (
             <button
@@ -327,11 +338,11 @@ function ProjectsContent() {
                   </div>
 
                   {/* Project Name & Description */}
-                  <h3 className="text-base font-semibold text-white group-hover:text-indigo-300 transition line-clamp-1">
+                  <h3 className="text-base font-semibold text-foreground group-hover:text-brand transition line-clamp-1">
                     {project.name}
                   </h3>
                   <p className="mt-1 text-xs text-slate-400 line-clamp-2 min-h-[32px]">
-                    {project.description || 'Chưa có mô tả dự án.'}
+                    {project.description || t('projects.noDescription')}
                   </p>
                 </div>
 
@@ -367,12 +378,12 @@ function ProjectsContent() {
                   <div className="flex items-center justify-between pt-3 border-t border-slate-800/80 text-xs text-slate-400">
                     <div className="flex items-center gap-1.5">
                       <Calendar className="h-3.5 w-3.5 text-slate-500" />
-                      <span>{project.target_date ? project.target_date : 'Chưa có hạn'}</span>
+                      <span>{project.target_date ? project.target_date : t('projects.noDeadline')}</span>
                     </div>
 
                     <div className="flex items-center gap-1.5">
                       <Users className="h-3.5 w-3.5 text-slate-500" />
-                      <span>{memberCount} nhân sự</span>
+                      <span>{t('projects.memberCount', { count: memberCount })}</span>
                       <ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition" />
                     </div>
                   </div>
@@ -387,8 +398,8 @@ function ProjectsContent() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Khởi tạo Dự án Mới"
-        description="Thiết lập thông tin dự án, mã code định danh và mục tiêu ban đầu."
+        title={t('projects.createModalTitle')}
+        description={t('projects.createModalDesc')}
         maxWidth="lg"
       >
         <form onSubmit={handleCreateSubmit} className="space-y-4">
@@ -406,7 +417,7 @@ function ProjectsContent() {
               <input
                 type="text"
                 required
-                placeholder="VD: Cải tiến Hệ thống Thanh toán v2"
+                placeholder={t('projects.namePlaceholder')}
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
@@ -420,7 +431,7 @@ function ProjectsContent() {
               <input
                 type="text"
                 required
-                placeholder="VD: PAY-V2"
+                placeholder={t('projects.codePlaceholder')}
                 value={formData.code}
                 onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm font-mono uppercase text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
@@ -432,7 +443,7 @@ function ProjectsContent() {
             <label className="text-xs font-semibold text-slate-300">{t('common.description')}</label>
             <textarea
               rows={2}
-              placeholder="Mục tiêu kinh doanh, phạm vi công việc..."
+              placeholder={t('projects.descPlaceholder')}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
@@ -441,21 +452,26 @@ function ProjectsContent() {
 
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Trạng thái ban đầu</label>
+              <label className="text-xs font-semibold text-slate-300">
+                {t('projects.initialStatus')}
+              </label>
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value as ProjectStatus })}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:border-indigo-500 focus:outline-none"
               >
-                <option value="PLANNING">Lập kế hoạch</option>
-                <option value="ACTIVE">Đang chạy (Active)</option>
-                <option value="ON_HOLD">Tạm hoãn (On Hold)</option>
-                <option value="AT_RISK">Có rủi ro (At Risk)</option>
+                {CREATE_STATUS_KEYS.map((st) => (
+                  <option key={st} value={st}>
+                    {t(`projects.statusLong.${st}`)}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Sức khỏe (Health)</label>
+              <label className="text-xs font-semibold text-slate-300">
+                {t('projects.healthLabel')}
+              </label>
               <select
                 value={formData.health_status}
                 onChange={(e) =>
@@ -463,23 +479,28 @@ function ProjectsContent() {
                 }
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:border-indigo-500 focus:outline-none"
               >
-                <option value="GREEN">Xanh (Khỏe mạnh)</option>
-                <option value="YELLOW">Vàng (Cần theo dõi)</option>
-                <option value="RED">Đỏ (Nguy cấp)</option>
+                {HEALTH_KEYS.map((h) => (
+                  <option key={h} value={h}>
+                    {t(`projects.healthOptions.${h}`)}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Độ ưu tiên</label>
+              <label className="text-xs font-semibold text-slate-300">
+                {t('projects.priorityLabel')}
+              </label>
               <select
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value as Priority })}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:border-indigo-500 focus:outline-none"
               >
-                <option value="LOW">Thấp (Low)</option>
-                <option value="MEDIUM">Trung bình (Medium)</option>
-                <option value="HIGH">Cao (High)</option>
-                <option value="CRITICAL">Khẩn cấp (Critical)</option>
+                {PRIORITY_KEYS.map((p) => (
+                  <option key={p} value={p}>
+                    {t(`projects.priorityOptions.${p}`)}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -496,7 +517,9 @@ function ProjectsContent() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Hạn chót mục tiêu (Target Date)</label>
+              <label className="text-xs font-semibold text-slate-300">
+                {t('projects.targetDateLong')}
+              </label>
               <input
                 type="date"
                 value={formData.target_date}
@@ -507,10 +530,12 @@ function ProjectsContent() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">Ghi chú của Leader</label>
+            <label className="text-xs font-semibold text-slate-300">
+              {t('projects.leaderNote')}
+            </label>
             <textarea
               rows={2}
-              placeholder="Ghi chú cá nhân của Leader về dự án này..."
+              placeholder={t('projects.leaderNotePlaceholder')}
               value={formData.leader_note}
               onChange={(e) => setFormData({ ...formData, leader_note: e.target.value })}
               className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
@@ -523,7 +548,7 @@ function ProjectsContent() {
               onClick={() => setIsModalOpen(false)}
               className="rounded-lg border border-slate-700 px-4 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 transition"
             >
-              Hủy
+              {t('common.cancel')}
             </button>
             <button
               type="submit"

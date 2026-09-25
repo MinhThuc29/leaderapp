@@ -49,6 +49,12 @@ interface TaskFormData {
   milestone_id: string;
 }
 
+const TASK_STATUS_KEYS: TaskStatus[] = ['TODO', 'DOING', 'WAITING', 'DONE', 'CANCELLED'];
+
+const TASK_PRIORITY_KEYS: Priority[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+
+const TASK_WEIGHT_KEYS = [1, 2, 3, 4, 5] as const;
+
 const initialFormData: TaskFormData = {
   title: '',
   description: '',
@@ -136,7 +142,7 @@ function TasksCockpitContent() {
       const res = await apiClient<TaskDto[]>('/tasks', { params });
       setTasks(res.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tải danh sách công việc');
+      setError(err instanceof Error ? err.message : t('tasks.loadError'));
     } finally {
       setLoading(false);
     }
@@ -147,6 +153,7 @@ function TasksCockpitContent() {
     filterPriority,
     filterOverdueOnly,
     search,
+    t,
   ]);
 
   useEffect(() => {
@@ -223,7 +230,7 @@ function TasksCockpitContent() {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim()) {
-      setFormError('Tiêu đề công việc không được để trống.');
+      setFormError(t('tasks.titleRequired'));
       return;
     }
 
@@ -270,7 +277,7 @@ function TasksCockpitContent() {
       setIsModalOpen(false);
       await fetchTasks();
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Không thể lưu công việc');
+      setFormError(err instanceof Error ? err.message : t('tasks.saveError'));
     } finally {
       setFormSubmitting(false);
     }
@@ -283,7 +290,7 @@ function TasksCockpitContent() {
       await apiClient(`/tasks/${id}`, { method: 'DELETE' });
       await fetchTasks();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể xóa công việc');
+      alert(err instanceof Error ? err.message : t('tasks.deleteError'));
     }
   };
 
@@ -309,7 +316,7 @@ function TasksCockpitContent() {
       setStatusDialogTask(null);
       await fetchTasks();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể cập nhật trạng thái');
+      alert(err instanceof Error ? err.message : t('tasks.statusUpdateError'));
     } finally {
       setStatusUpdating(false);
     }
@@ -320,27 +327,27 @@ function TasksCockpitContent() {
     switch (p) {
       case 'CRITICAL':
         return (
-          <span className="rounded bg-rose-950/80 text-rose-300 border border-rose-800/80 px-2 py-0.5 text-[11px] font-semibold">
-            Khẩn cấp
+          <span className="rounded bg-critical-bg text-critical-fg border border-critical-border px-2 py-0.5 text-[11px] font-semibold">
+            {t('tasks.priority.CRITICAL')}
           </span>
         );
       case 'HIGH':
         return (
-          <span className="rounded bg-amber-950/80 text-amber-300 border border-amber-800/80 px-2 py-0.5 text-[11px] font-semibold">
-            Cao
+          <span className="rounded bg-warning-bg text-warning-fg border border-warning-border px-2 py-0.5 text-[11px] font-semibold">
+            {t('tasks.priority.HIGH')}
           </span>
         );
       case 'MEDIUM':
         return (
-          <span className="rounded bg-indigo-950/80 text-indigo-300 border border-indigo-800/80 px-2 py-0.5 text-[11px] font-medium">
-            Trung bình
+          <span className="rounded bg-brand-bg text-brand-fg border border-brand-border px-2 py-0.5 text-[11px] font-medium">
+            {t('tasks.priority.MEDIUM')}
           </span>
         );
       case 'LOW':
       default:
         return (
-          <span className="rounded bg-slate-800 text-slate-300 border border-slate-700 px-2 py-0.5 text-[11px]">
-            Thấp
+          <span className="rounded bg-neutral-bg text-neutral-fg border border-neutral-border px-2 py-0.5 text-[11px]">
+            {t('tasks.priority.LOW')}
           </span>
         );
     }
@@ -358,7 +365,7 @@ function TasksCockpitContent() {
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
             <CheckSquare className="h-7 w-7 text-indigo-400" />
             <span>{t('tasks.cockpitTitle')}</span>
           </h1>
@@ -393,7 +400,7 @@ function TasksCockpitContent() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-4">
           <div className="text-xs text-slate-400 font-medium">{t('common.total')}</div>
-          <div className="mt-2 text-2xl font-bold font-mono text-white">{stats.total}</div>
+          <div className="mt-2 text-2xl font-bold font-mono text-foreground">{stats.total}</div>
         </div>
 
         <div className="rounded-xl border border-blue-900/40 bg-blue-950/20 p-4">
@@ -520,12 +527,12 @@ function TasksCockpitContent() {
               onChange={(e) => setFilterStatus(e.target.value)}
               className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
             >
-              <option value="ALL">Tất cả</option>
-              <option value="TODO">Cần làm (TODO)</option>
-              <option value="DOING">Đang làm (DOING)</option>
-              <option value="WAITING">Chờ (WAITING)</option>
-              <option value="DONE">Hoàn thành (DONE)</option>
-              <option value="CANCELLED">Đã hủy</option>
+              <option value="ALL">{t('common.all')}</option>
+              {TASK_STATUS_KEYS.map((st) => (
+                <option key={st} value={st}>
+                  {t(`tasks.statusFilterOptions.${st}`)}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -537,11 +544,12 @@ function TasksCockpitContent() {
               onChange={(e) => setFilterPriority(e.target.value)}
               className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
             >
-              <option value="ALL">Tất cả</option>
-              <option value="LOW">{t('tasks.priority.LOW')}</option>
-              <option value="MEDIUM">{t('tasks.priority.MEDIUM')}</option>
-              <option value="HIGH">{t('tasks.priority.HIGH')}</option>
-              <option value="CRITICAL">{t('tasks.priority.CRITICAL')}</option>
+              <option value="ALL">{t('common.all')}</option>
+              {TASK_PRIORITY_KEYS.map((p) => (
+                <option key={p} value={p}>
+                  {t(`tasks.priority.${p}`)}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -577,7 +585,7 @@ function TasksCockpitContent() {
           <CheckSquare className="mx-auto h-10 w-10 text-slate-600 mb-3" />
           <h3 className="text-sm font-semibold text-slate-300">{t('common.noData')}</h3>
           <p className="mt-1 text-xs text-slate-500">
-            Hãy thử thay đổi bộ lọc hoặc tạo công việc mới đầu tiên.
+            {t('tasks.emptyHint')}
           </p>
           <button
             type="button"
@@ -585,7 +593,7 @@ function TasksCockpitContent() {
             className="mt-4 inline-flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
           >
             <Plus className="h-4 w-4" />
-            <span>Tạo công việc ngay</span>
+            <span>{t('tasks.createNow')}</span>
           </button>
         </div>
       ) : viewMode === 'table' ? (
@@ -619,7 +627,7 @@ function TasksCockpitContent() {
                       <td className="px-4 py-3 max-w-xs">
                         <div className="flex items-start gap-2">
                           {overdue && (
-                            <span title="Quá hạn!">
+                            <span title={t('tasks.overdueTitle')}>
                               <AlertTriangle className="h-3.5 w-3.5 text-rose-400 shrink-0 mt-0.5" />
                             </span>
                           )}
@@ -712,11 +720,11 @@ function TasksCockpitContent() {
                           }
                           className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-[11px] text-slate-200 focus:border-indigo-500 focus:outline-none"
                         >
-                          <option value="TODO">Cần làm</option>
-                          <option value="DOING">Đang làm</option>
-                          <option value="WAITING">Chờ phản hồi</option>
-                          <option value="DONE">Hoàn thành</option>
-                          <option value="CANCELLED">Hủy bỏ</option>
+                          {TASK_STATUS_KEYS.map((st) => (
+                            <option key={st} value={st}>
+                              {t(`tasks.statusShort.${st}`)}
+                            </option>
+                          ))}
                         </select>
                       </td>
 
@@ -752,7 +760,7 @@ function TasksCockpitContent() {
         /* KANBAN VIEW */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {kanbanColumns.map((col) => {
-            const colTasks = tasks.filter((t) => t.status === col.status);
+            const colTasks = tasks.filter((item) => item.status === col.status);
             return (
               <div
                 key={col.status}
@@ -768,7 +776,7 @@ function TasksCockpitContent() {
                 <div className="space-y-2.5 flex-1 overflow-y-auto">
                   {colTasks.length === 0 ? (
                     <div className="h-24 flex items-center justify-center text-[11px] text-slate-600 border border-dashed border-slate-800/80 rounded-lg">
-                      Không có việc
+                      {t('tasks.kanbanEmpty')}
                     </div>
                   ) : (
                     colTasks.map((task) => {
@@ -859,7 +867,7 @@ function TasksCockpitContent() {
 
                           {/* Quick move buttons */}
                           <div className="mt-2.5 pt-2 border-t border-slate-900/80 flex items-center justify-between gap-1 text-[10px]">
-                            <span className="text-slate-500">Chuyển:</span>
+                            <span className="text-slate-500">{t('tasks.moveToLabel')}</span>
                             <div className="flex gap-1">
                               {col.status !== 'TODO' && (
                                 <button
@@ -867,7 +875,7 @@ function TasksCockpitContent() {
                                   onClick={() => promptStatusChange(task, 'TODO')}
                                   className="px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded"
                                 >
-                                  Cần làm
+                                  {t('tasks.statusShort.TODO')}
                                 </button>
                               )}
                               {col.status !== 'DOING' && (
@@ -876,7 +884,7 @@ function TasksCockpitContent() {
                                   onClick={() => promptStatusChange(task, 'DOING')}
                                   className="px-1.5 py-0.5 bg-blue-950 hover:bg-blue-900 text-blue-300 rounded border border-blue-800/60"
                                 >
-                                  Đang làm
+                                  {t('tasks.statusShort.DOING')}
                                 </button>
                               )}
                               {col.status !== 'DONE' && (
@@ -885,7 +893,7 @@ function TasksCockpitContent() {
                                   onClick={() => promptStatusChange(task, 'DONE')}
                                   className="px-1.5 py-0.5 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 rounded border border-emerald-800/60"
                                 >
-                                  Xong
+                                  {t('tasks.moveDone')}
                                 </button>
                               )}
                             </div>
@@ -906,7 +914,7 @@ function TasksCockpitContent() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingTask ? t('tasks.editTask') : t('tasks.createTask')}
-        description="Điền thông tin nhiệm vụ, chọn dự án, người thực hiện và thiết lập hạn định."
+        description={t('tasks.modalDesc')}
         maxWidth="lg"
       >
         <form onSubmit={handleFormSubmit} className="space-y-4">
@@ -919,12 +927,12 @@ function TasksCockpitContent() {
           {/* Title */}
           <div className="space-y-1">
             <label className="text-xs font-semibold text-slate-300">
-              Tiêu đề công việc <span className="text-red-400">*</span>
+              {t('tasks.titleLabel')} <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
               required
-              placeholder="VD: Viết API Authentication, Review PR..."
+              placeholder={t('tasks.titlePlaceholder')}
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -933,10 +941,10 @@ function TasksCockpitContent() {
 
           {/* Description */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">Mô tả chi tiết</label>
+            <label className="text-xs font-semibold text-slate-300">{t('tasks.descLabel')}</label>
             <textarea
               rows={2}
-              placeholder="Ghi chú chi tiết yêu cầu, tiêu chuẩn nghiệm thu..."
+              placeholder={t('tasks.descPlaceholder')}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -946,7 +954,7 @@ function TasksCockpitContent() {
           {/* Project & Milestone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Dự án</label>
+              <label className="text-xs font-semibold text-slate-300">{t('common.project')}</label>
               <select
                 value={formData.project_id}
                 onChange={(e) =>
@@ -958,7 +966,7 @@ function TasksCockpitContent() {
                 }
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:border-indigo-500 focus:outline-none"
               >
-                <option value="">(Không thuộc dự án cụ thể)</option>
+                <option value="">{t('tasks.noProjectOption')}</option>
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.code} - {p.name}
@@ -968,14 +976,16 @@ function TasksCockpitContent() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Cột mốc (Milestone)</label>
+              <label className="text-xs font-semibold text-slate-300">
+                {t('tasks.milestoneLabel')}
+              </label>
               <select
                 value={formData.milestone_id}
                 onChange={(e) => setFormData({ ...formData, milestone_id: e.target.value })}
                 disabled={!formData.project_id || projectMilestones.length === 0}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:border-indigo-500 focus:outline-none disabled:opacity-50"
               >
-                <option value="">(Không gán vào cột mốc)</option>
+                <option value="">{t('tasks.noMilestoneOption')}</option>
                 {projectMilestones.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.title} ({m.status})
@@ -989,14 +999,14 @@ function TasksCockpitContent() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-300">
-                Người phụ trách (Assignee)
+                {t('tasks.assigneeLabel')}
               </label>
               <select
                 value={formData.member_id}
                 onChange={(e) => setFormData({ ...formData, member_id: e.target.value })}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:border-indigo-500 focus:outline-none"
               >
-                <option value="">Leader (Bạn tự làm)</option>
+                <option value="">{t('tasks.assigneeSelf')}</option>
                 {members.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.name} ({m.role})
@@ -1007,18 +1017,18 @@ function TasksCockpitContent() {
 
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-300">
-                Trọng số tính tiến độ (Weight 1 - 5)
+                {t('tasks.weightLabel')}
               </label>
               <select
                 value={formData.weight}
                 onChange={(e) => setFormData({ ...formData, weight: Number(e.target.value) })}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:border-indigo-500 focus:outline-none font-mono"
               >
-                <option value={1}>1 - Nhẹ / Việc nhỏ</option>
-                <option value={2}>2 - Bình thường</option>
-                <option value={3}>3 - Quan trọng vừa</option>
-                <option value={4}>4 - Khối lượng lớn</option>
-                <option value={5}>5 - Cực kỳ quan trọng / Core feature</option>
+                {TASK_WEIGHT_KEYS.map((w) => (
+                  <option key={w} value={w}>
+                    {t(`tasks.weightOptions.${w}`)}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -1026,7 +1036,7 @@ function TasksCockpitContent() {
           {/* Status & Priority */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Trạng thái</label>
+              <label className="text-xs font-semibold text-slate-300">{t('common.status')}</label>
               <select
                 value={formData.status}
                 onChange={(e) =>
@@ -1034,16 +1044,18 @@ function TasksCockpitContent() {
                 }
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:border-indigo-500 focus:outline-none"
               >
-                <option value="TODO">Cần làm (TODO)</option>
-                <option value="DOING">Đang làm (DOING)</option>
-                <option value="WAITING">Chờ phản hồi (WAITING)</option>
-                <option value="DONE">Hoàn thành (DONE)</option>
-                <option value="CANCELLED">Hủy bỏ (CANCELLED)</option>
+                {TASK_STATUS_KEYS.map((st) => (
+                  <option key={st} value={st}>
+                    {t(`tasks.statusFormOptions.${st}`)}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Mức độ ưu tiên</label>
+              <label className="text-xs font-semibold text-slate-300">
+                {t('tasks.priorityLabel')}
+              </label>
               <select
                 value={formData.priority}
                 onChange={(e) =>
@@ -1051,10 +1063,11 @@ function TasksCockpitContent() {
                 }
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:border-indigo-500 focus:outline-none"
               >
-                <option value="LOW">Thấp (Low)</option>
-                <option value="MEDIUM">Trung bình (Medium)</option>
-                <option value="HIGH">Cao (High)</option>
-                <option value="CRITICAL">Khẩn cấp (Critical)</option>
+                {TASK_PRIORITY_KEYS.map((p) => (
+                  <option key={p} value={p}>
+                    {t(`tasks.priorityOptions.${p}`)}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -1062,7 +1075,9 @@ function TasksCockpitContent() {
           {/* Due date & time */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Hạn chót ngày</label>
+              <label className="text-xs font-semibold text-slate-300">
+                {t('tasks.dueDateLabel')}
+              </label>
               <input
                 type="date"
                 value={formData.due_date}
@@ -1072,7 +1087,9 @@ function TasksCockpitContent() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Giờ hoàn thành</label>
+              <label className="text-xs font-semibold text-slate-300">
+                {t('tasks.dueTimeLabel')}
+              </label>
               <input
                 type="time"
                 value={formData.due_time}
@@ -1089,7 +1106,7 @@ function TasksCockpitContent() {
               onClick={() => setIsModalOpen(false)}
               className="rounded-lg border border-slate-700 px-4 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 transition"
             >
-              Hủy
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
@@ -1107,7 +1124,12 @@ function TasksCockpitContent() {
         isOpen={!!statusDialogTask}
         onClose={() => setStatusDialogTask(null)}
         title={t('tasks.confirmStatusChange')}
-        description={`Chuyển công việc "${statusDialogTask?.task.title}" sang trạng thái ${statusDialogTask?.nextStatus}.`}
+        description={t('tasks.statusChangeDesc', {
+          title: statusDialogTask?.task.title ?? '',
+          status: statusDialogTask
+            ? t(`tasks.statusShort.${statusDialogTask.nextStatus}`)
+            : '',
+        })}
         maxWidth="md"
       >
         <div className="space-y-4">
@@ -1130,7 +1152,7 @@ function TasksCockpitContent() {
               onClick={() => setStatusDialogTask(null)}
               className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800 transition"
             >
-              Hủy
+              {t('common.cancel')}
             </button>
             <button
               type="button"

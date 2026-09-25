@@ -36,30 +36,30 @@ import {
 } from 'lucide-react';
 
 const SEVERITY_COLORS: Record<Severity, { badge: string }> = {
-  CRITICAL: { badge: 'bg-red-950 text-red-400 border-red-800' },
-  HIGH: { badge: 'bg-orange-950 text-orange-400 border-orange-800' },
-  MEDIUM: { badge: 'bg-amber-950 text-amber-400 border-amber-800' },
-  LOW: { badge: 'bg-slate-800 text-slate-300 border-slate-700' },
+  CRITICAL: { badge: 'bg-critical-bg text-critical-fg border-critical-border' },
+  HIGH: { badge: 'bg-danger-bg text-danger-fg border-danger-border' },
+  MEDIUM: { badge: 'bg-warning-bg text-warning-fg border-warning-border' },
+  LOW: { badge: 'bg-neutral-bg text-neutral-fg border-neutral-border' },
 };
 
 const PROBABILITY_COLORS: Record<Probability, string> = {
-  HIGH: 'bg-red-500/15 text-red-400 border-red-500/30',
-  MEDIUM: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-  LOW: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+  HIGH: 'bg-danger-bg text-danger-fg border-danger-border',
+  MEDIUM: 'bg-warning-bg text-warning-fg border-warning-border',
+  LOW: 'bg-success-bg text-success-fg border-success-border',
 };
 
 const RISK_STATUS_MAP: Record<RiskStatus, { badge: string }> = {
-  OPEN: { badge: 'bg-red-950 text-red-400 border-red-800' },
-  MONITORING: { badge: 'bg-amber-950 text-amber-400 border-amber-800' },
-  MITIGATED: { badge: 'bg-emerald-950 text-emerald-400 border-emerald-800' },
-  CLOSED: { badge: 'bg-slate-800 text-slate-400 border-slate-700' },
+  OPEN: { badge: 'bg-danger-bg text-danger-fg border-danger-border' },
+  MONITORING: { badge: 'bg-warning-bg text-warning-fg border-warning-border' },
+  MITIGATED: { badge: 'bg-success-bg text-success-fg border-success-border' },
+  CLOSED: { badge: 'bg-neutral-bg text-neutral-fg border-neutral-border' },
 };
 
 const INCIDENT_STATUS_MAP: Record<IncidentStatus, { badge: string }> = {
-  OPEN: { badge: 'bg-red-950 text-red-400 border-red-800' },
-  INVESTIGATING: { badge: 'bg-amber-950 text-amber-400 border-amber-800' },
-  RESOLVED: { badge: 'bg-blue-950 text-blue-400 border-blue-800' },
-  CLOSED: { badge: 'bg-emerald-950 text-emerald-400 border-emerald-800' },
+  OPEN: { badge: 'bg-danger-bg text-danger-fg border-danger-border' },
+  INVESTIGATING: { badge: 'bg-warning-bg text-warning-fg border-warning-border' },
+  RESOLVED: { badge: 'bg-info-bg text-info-fg border-info-border' },
+  CLOSED: { badge: 'bg-success-bg text-success-fg border-success-border' },
 };
 
 function formatDate(dateStr: string | null | undefined): string {
@@ -441,7 +441,7 @@ function RisksContent() {
         <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
           <span className="text-xs text-slate-400 block font-medium">{t('management.risksPage.statTotalRisks')}</span>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-white">{risks.length}</span>
+            <span className="text-2xl font-bold font-mono text-foreground">{risks.length}</span>
             <span className="text-xs text-slate-500">{t('common.items')}</span>
           </div>
         </div>
@@ -490,7 +490,7 @@ function RisksContent() {
           <div>
             <div className="flex items-center gap-2">
               <ShieldAlert className="h-5 w-5 text-indigo-400" />
-              <h2 className="text-sm font-bold uppercase tracking-wider text-white">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
                 {t('management.risksPage.matrixTitle')}
               </h2>
             </div>
@@ -627,7 +627,7 @@ function RisksContent() {
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
                 activeTab === 'risks'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
-                  : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800'
+                  : 'bg-slate-900 text-slate-400 hover:text-foreground hover:bg-slate-800'
               }`}
             >
               <ShieldAlert className="h-4 w-4" />
@@ -640,7 +640,7 @@ function RisksContent() {
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
                 activeTab === 'incidents'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
-                  : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800'
+                  : 'bg-slate-900 text-slate-400 hover:text-foreground hover:bg-slate-800'
               }`}
             >
               <Flame className="h-4 w-4" />
@@ -696,7 +696,7 @@ function RisksContent() {
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition ${
                   selectedRiskStatus === ''
                     ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
-                    : 'bg-slate-900 text-slate-400 hover:text-white'
+                    : 'bg-slate-900 text-slate-400 hover:text-foreground'
                 }`}
               >
                 {t('common.allCount', { count: risks.length })}
@@ -709,7 +709,7 @@ function RisksContent() {
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition ${
                     selectedRiskStatus === st
                       ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
-                      : 'bg-slate-900 text-slate-400 hover:text-white'
+                      : 'bg-slate-900 text-slate-400 hover:text-foreground'
                   }`}
                 >
                   {t(`management.riskStatuses.${st}`)} ({risks.filter((r) => r.status === st).length})
@@ -761,7 +761,7 @@ function RisksContent() {
                           </span>
                         </div>
 
-                        <h3 className="text-sm font-bold text-white leading-snug">
+                        <h3 className="text-sm font-bold text-foreground leading-snug">
                           {risk.title}
                         </h3>
 
@@ -776,7 +776,7 @@ function RisksContent() {
                         <button
                           type="button"
                           onClick={() => openEditRiskModal(risk)}
-                          className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:text-white transition"
+                          className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:text-foreground transition"
                           title={t('common.edit')}
                         >
                           <Edit2 className="h-3.5 w-3.5" />
@@ -831,7 +831,7 @@ function RisksContent() {
                             className={`px-2 py-0.5 rounded text-[10px] font-semibold border transition disabled:opacity-40 disabled:cursor-not-allowed ${
                               risk.status === nextSt
                                 ? RISK_STATUS_MAP[nextSt].badge
-                                : 'border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-800 hover:text-white'
+                                : 'border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-800 hover:text-foreground'
                             }`}
                           >
                             {t(`management.riskStatuses.${nextSt}`)}
@@ -860,7 +860,7 @@ function RisksContent() {
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition ${
                   selectedIncidentStatus === ''
                     ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
-                    : 'bg-slate-900 text-slate-400 hover:text-white'
+                    : 'bg-slate-900 text-slate-400 hover:text-foreground'
                 }`}
               >
                 {t('common.allCount', { count: incidents.length })}
@@ -873,7 +873,7 @@ function RisksContent() {
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition ${
                     selectedIncidentStatus === st
                       ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
-                      : 'bg-slate-900 text-slate-400 hover:text-white'
+                      : 'bg-slate-900 text-slate-400 hover:text-foreground'
                   }`}
                 >
                   {t(`management.incidentStatuses.${st}`)} ({incidents.filter((i) => i.status === st).length})
@@ -918,7 +918,7 @@ function RisksContent() {
                           </span>
                         </div>
 
-                        <h3 className="text-base font-bold text-white leading-snug">
+                        <h3 className="text-base font-bold text-foreground leading-snug">
                           {inc.title}
                         </h3>
 
@@ -942,7 +942,7 @@ function RisksContent() {
                         <button
                           type="button"
                           onClick={() => openEditIncidentModal(inc)}
-                          className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:text-white transition"
+                          className="p-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:text-foreground transition"
                           title={t('management.risksPage.editIncidentTitle')}
                         >
                           <Edit2 className="h-3.5 w-3.5" />
@@ -1175,7 +1175,7 @@ function RisksContent() {
               onClick={() => setIsRiskModalOpen(false)}
               className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-700"
             >
-              Hủy
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
@@ -1242,11 +1242,11 @@ function RisksContent() {
 
           <div>
             <label className="text-xs font-semibold text-slate-300 block mb-1">
-              Mô tả hiện tượng sự cố <span className="text-red-400">*</span>
+              {t('management.risksPage.incidentDescLabel')} <span className="text-red-400">*</span>
             </label>
             <textarea
               rows={2}
-              placeholder="Chi tiết lỗi phát sinh, thời gian xảy ra, phạm vi ảnh hưởng người dùng..."
+              placeholder={t('management.risksPage.incidentDescPlaceholder')}
               value={incidentFormData.description}
               onChange={(e) => setIncidentFormData({ ...incidentFormData, description: e.target.value })}
               className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -1257,44 +1257,46 @@ function RisksContent() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-semibold text-slate-300 block mb-1">
-                Mức độ nghiêm trọng
+                {t('management.risksPage.incidentSeverityLabel')}
               </label>
               <select
                 value={incidentFormData.severity}
                 onChange={(e) => setIncidentFormData({ ...incidentFormData, severity: e.target.value as Severity })}
                 className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
               >
-                <option value="CRITICAL">CRITICAL (Toàn bộ hệ thống sập)</option>
-                <option value="HIGH">HIGH (Ảnh hưởng luồng chính)</option>
-                <option value="MEDIUM">MEDIUM (Ảnh hưởng cục bộ)</option>
-                <option value="LOW">LOW (Lỗi nhỏ / thẩm mỹ)</option>
+                {(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'] as Severity[]).map((sv) => (
+                  <option key={sv} value={sv}>
+                    {t(`management.incidentSeverityOptions.${sv}`)}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div>
               <label className="text-xs font-semibold text-slate-300 block mb-1">
-                Trạng thái xử lý
+                {t('management.risksPage.incidentStatusLabel')}
               </label>
               <select
                 value={incidentFormData.status}
                 onChange={(e) => setIncidentFormData({ ...incidentFormData, status: e.target.value as IncidentStatus })}
                 className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
               >
-                <option value="OPEN">Mới phát sinh (Open)</option>
-                <option value="INVESTIGATING">Đang điều tra (Investigating)</option>
-                <option value="RESOLVED">Đã khắc phục (Resolved)</option>
-                <option value="CLOSED">Đã đóng (Closed)</option>
+                {(['OPEN', 'INVESTIGATING', 'RESOLVED', 'CLOSED'] as IncidentStatus[]).map((st) => (
+                  <option key={st} value={st}>
+                    {t(`management.incidentStatusOptions.${st}`)}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
 
           <div>
             <label className="text-xs font-semibold text-red-300 block mb-1">
-              1. Nguyên nhân gốc rễ (Root Cause)
+              {t('management.risksPage.rootCauseLabel')}
             </label>
             <textarea
               rows={2}
-              placeholder="Tại sao lỗi xảy ra? (Áp dụng 5-Whys để phân tích nguyên nhân sâu xa)..."
+              placeholder={t('management.risksPage.rootCausePlaceholder')}
               value={incidentFormData.root_cause || ''}
               onChange={(e) => setIncidentFormData({ ...incidentFormData, root_cause: e.target.value })}
               className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -1303,11 +1305,11 @@ function RisksContent() {
 
           <div>
             <label className="text-xs font-semibold text-blue-300 block mb-1">
-              2. Biện pháp xử lý đã thực hiện (Solution / Action taken)
+              {t('management.risksPage.solutionLabel')}
             </label>
             <textarea
               rows={2}
-              placeholder="Đã làm gì để phục hồi hệ thống hoạt động trở lại?..."
+              placeholder={t('management.risksPage.solutionPlaceholder')}
               value={incidentFormData.solution || ''}
               onChange={(e) => setIncidentFormData({ ...incidentFormData, solution: e.target.value })}
               className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -1316,11 +1318,11 @@ function RisksContent() {
 
           <div>
             <label className="text-xs font-semibold text-emerald-300 block mb-1">
-              3. Biện pháp phòng ngừa tái diễn (Prevention)
+              {t('management.risksPage.preventionLabel')}
             </label>
             <textarea
               rows={2}
-              placeholder="Cần thay đổi quy trình, bổ sung test case, checklist hay cấu hình gì?..."
+              placeholder={t('management.risksPage.preventionPlaceholder')}
               value={incidentFormData.prevention || ''}
               onChange={(e) => setIncidentFormData({ ...incidentFormData, prevention: e.target.value })}
               className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -1333,14 +1335,18 @@ function RisksContent() {
               onClick={() => setIsIncidentModalOpen(false)}
               className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-700"
             >
-              Hủy
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={formSubmitting}
               className="rounded-xl bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-500 disabled:opacity-50"
             >
-              {formSubmitting ? 'Đang lưu...' : editingIncident ? 'Cập nhật sự cố' : 'Lưu sự cố'}
+              {formSubmitting
+                ? t('common.saving')
+                : editingIncident
+                  ? t('management.risksPage.updateIncident')
+                  : t('management.risksPage.saveIncident')}
             </button>
           </div>
         </form>
@@ -1352,26 +1358,31 @@ function RisksContent() {
       <Modal
         isOpen={isLessonModalOpen}
         onClose={() => setIsLessonModalOpen(false)}
-        title="Đúc kết Bài học Kinh nghiệm từ Sự cố"
-        description="Tạo bản ghi vào Phân hệ Tri thức để toàn team học tập và phòng ngừa."
+        title={t('management.risksPage.modalConvertTitle')}
+        description={t('management.risksPage.modalConvertDesc')}
         maxWidth="lg"
       >
         <form onSubmit={handleConvertToLessonSubmit} className="space-y-4">
           <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs space-y-1">
-            <span className="text-slate-500 block text-[11px] uppercase font-bold">Sự cố nguồn:</span>
-            <span className="font-semibold text-white block">{incidentToConvert?.title}</span>
+            <span className="text-slate-500 block text-[11px] uppercase font-bold">
+              {t('management.risksPage.sourceIncidentLabel')}
+            </span>
+            <span className="font-semibold text-foreground block">{incidentToConvert?.title}</span>
             <span className="text-slate-400 block text-[11px]">
-              Dự án: [{incidentToConvert?.project_code}] {incidentToConvert?.project_name}
+              {t('management.risksPage.convertProjectPrefix', {
+                code: incidentToConvert?.project_code ?? '',
+                name: incidentToConvert?.project_name ?? '',
+              })}
             </span>
           </div>
 
           <div>
             <label className="text-xs font-semibold text-amber-300 block mb-1">
-              Bài học rút ra (Lesson) <span className="text-red-400">*</span>
+              {t('management.risksPage.convertLessonLabel')} <span className="text-red-400">*</span>
             </label>
             <textarea
               rows={3}
-              placeholder="Nguyên lý kỹ thuật hoặc kinh nghiệm cốt lõi rút ra sau sự cố này..."
+              placeholder={t('management.risksPage.convertLessonPlaceholder')}
               value={lessonFormData.lesson}
               onChange={(e) => setLessonFormData({ ...lessonFormData, lesson: e.target.value })}
               className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -1381,11 +1392,11 @@ function RisksContent() {
 
           <div>
             <label className="text-xs font-semibold text-emerald-300 block mb-1">
-              Hành động tương lai (Future Action) <span className="text-red-400">*</span>
+              {t('management.risksPage.convertActionLabel')} <span className="text-red-400">*</span>
             </label>
             <textarea
               rows={2}
-              placeholder="Quy tắc đưa vào guideline, checklist hoặc bài test CI/CD..."
+              placeholder={t('management.risksPage.convertActionPlaceholder')}
               value={lessonFormData.future_action}
               onChange={(e) => setLessonFormData({ ...lessonFormData, future_action: e.target.value })}
               className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
@@ -1395,7 +1406,7 @@ function RisksContent() {
 
           <div>
             <label className="text-xs font-semibold text-slate-300 block mb-1">
-              Thẻ nhãn (Tags cách nhau bởi dấu phẩy)
+              {t('management.risksPage.convertTagsLabel')}
             </label>
             <input
               type="text"
@@ -1412,14 +1423,16 @@ function RisksContent() {
               onClick={() => setIsLessonModalOpen(false)}
               className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-700"
             >
-              Hủy
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={formSubmitting}
               className="rounded-xl bg-amber-600 px-4 py-2 text-xs font-semibold text-white hover:bg-amber-500 disabled:opacity-50"
             >
-              {formSubmitting ? 'Đang tạo bài học...' : 'Xác nhận Lưu vào Tri thức'}
+              {formSubmitting
+                ? t('management.risksPage.convertSaving')
+                : t('management.risksPage.convertSubmit')}
             </button>
           </div>
         </form>

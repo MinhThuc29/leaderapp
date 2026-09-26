@@ -388,23 +388,23 @@ function NotesContent() {
             onClick={() => setIsModalOpen(false)}
             aria-hidden="true"
           />
-          <div className="relative w-full max-w-3xl rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl flex flex-col max-h-[90vh] z-10">
+          <div className="relative w-full max-w-3xl rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl flex flex-col max-h-[90vh] z-10">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-6 py-4">
-              <h2 className="text-base font-bold text-slate-900 dark:text-foreground flex items-center gap-2">
-                <FileText className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
+            <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                <FileText className="h-4 w-4 text-brand" />
                 <span>{editingNote ? t('knowledge.notesPage.modalEditTitle') : t('knowledge.notesPage.modalCreateTitle')}</span>
               </h2>
               <div className="flex items-center gap-2">
                 {/* Switch Edit / Preview */}
-                <div className="flex rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 p-0.5 text-xs">
+                <div className="flex rounded-lg border border-slate-800 bg-slate-950 p-0.5 text-xs">
                   <button
                     type="button"
                     onClick={() => setModalMode('edit')}
                     className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition ${
                       modalMode === 'edit'
                         ? 'bg-indigo-600 text-white font-semibold shadow-sm'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                        : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
                     <Code className="h-3.5 w-3.5" />
@@ -416,7 +416,7 @@ function NotesContent() {
                     className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition ${
                       modalMode === 'preview'
                         ? 'bg-indigo-600 text-white font-semibold shadow-sm'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                        : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
                     <Eye className="h-3.5 w-3.5" />

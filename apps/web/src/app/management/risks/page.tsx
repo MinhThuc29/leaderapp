@@ -432,7 +432,7 @@ function RisksContent() {
   return (
     <div className="space-y-8">
       {error && (
-        <div className="rounded-xl border border-red-800 bg-red-950/40 p-4 text-sm text-red-300">
+        <div className="rounded-xl border border-danger-border bg-danger-bg p-4 text-sm text-danger-fg">
           {error}
         </div>
       )}
@@ -446,38 +446,38 @@ function RisksContent() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-red-900/60 bg-red-950/20 p-4">
-          <span className="text-xs text-red-300 block font-medium flex items-center gap-1.5">
-            <AlertTriangle className="h-3.5 w-3.5 text-red-400" />
+        <div className="rounded-2xl border border-danger-border bg-danger-bg p-4">
+          <span className="text-xs text-danger-fg block font-medium flex items-center gap-1.5">
+            <AlertTriangle className="h-3.5 w-3.5 text-danger" />
             {t('management.risksPage.statHighExposure')}
           </span>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-red-400">{highExposureRisks}</span>
-            <span className="text-xs text-red-300/70">{t('management.risksPage.statHighExposureUnit')}</span>
+            <span className="text-2xl font-bold font-mono text-danger-fg">{highExposureRisks}</span>
+            <span className="text-xs text-danger-fg/70">{t('management.risksPage.statHighExposureUnit')}</span>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-amber-900/60 bg-amber-950/20 p-4">
-          <span className="text-xs text-amber-300 block font-medium flex items-center gap-1.5">
-            <Flame className="h-3.5 w-3.5 text-amber-400" />
+        <div className="rounded-2xl border border-warning-border bg-warning-bg p-4">
+          <span className="text-xs text-warning-fg block font-medium flex items-center gap-1.5">
+            <Flame className="h-3.5 w-3.5 text-warning" />
             {t('management.risksPage.statOpenIncidents')}
           </span>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-amber-400">{openIncidents}</span>
-            <span className="text-xs text-amber-300/70">{t('management.risksPage.statOpenIncidentsUnit')}</span>
+            <span className="text-2xl font-bold font-mono text-warning-fg">{openIncidents}</span>
+            <span className="text-xs text-warning-fg/70">{t('management.risksPage.statOpenIncidentsUnit')}</span>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-emerald-900/60 bg-emerald-950/20 p-4">
-          <span className="text-xs text-emerald-300 block font-medium flex items-center gap-1.5">
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+        <div className="rounded-2xl border border-success-border bg-success-bg p-4">
+          <span className="text-xs text-success-fg block font-medium flex items-center gap-1.5">
+            <CheckCircle2 className="h-3.5 w-3.5 text-success" />
             {t('management.risksPage.statMitigated')}
           </span>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-emerald-400">
+            <span className="text-2xl font-bold font-mono text-success-fg">
               {risks.filter((r) => r.status === 'MITIGATED' || r.status === 'CLOSED').length}
             </span>
-            <span className="text-xs text-emerald-300/70">{t('management.risksPage.statMitigatedUnit')}</span>
+            <span className="text-xs text-success-fg/70">{t('management.risksPage.statMitigatedUnit')}</span>
           </div>
         </div>
       </div>
@@ -489,7 +489,7 @@ function RisksContent() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <ShieldAlert className="h-5 w-5 text-indigo-400" />
+              <ShieldAlert className="h-5 w-5 text-brand" />
               <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
                 {t('management.risksPage.matrixTitle')}
               </h2>
@@ -504,7 +504,7 @@ function RisksContent() {
               <button
                 type="button"
                 onClick={() => setMatrixCellFilter(null)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-700/60 bg-indigo-950/60 px-3 py-1.5 text-xs font-semibold text-indigo-300 hover:bg-indigo-900 transition"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-brand-border bg-brand-bg px-3 py-1.5 text-xs font-semibold text-brand-fg hover:bg-brand-bg/70 transition"
               >
                 <X className="h-3.5 w-3.5" />
                 <span>
@@ -539,9 +539,9 @@ function RisksContent() {
               <div className="text-slate-500 uppercase tracking-wider text-[11px] flex items-center justify-center">
                 {t('management.risksPage.matrixAxisLabel')}
               </div>
-              <div className="text-red-400">CRITICAL</div>
-              <div className="text-orange-400">HIGH</div>
-              <div className="text-amber-400">MEDIUM</div>
+              <div className="text-critical-fg">CRITICAL</div>
+              <div className="text-danger-fg">HIGH</div>
+              <div className="text-warning-fg">MEDIUM</div>
               <div className="text-slate-400">LOW</div>
             </div>
 
@@ -572,12 +572,12 @@ function RisksContent() {
                   let cellColor = 'bg-slate-950 hover:bg-slate-900 text-slate-400';
                   if (cell?.level === 'HIGH') {
                     cellColor = count > 0
-                      ? 'bg-red-950/40 hover:bg-red-950/70 border-red-900/60 text-red-300'
-                      : 'bg-red-950/15 text-slate-500 hover:bg-red-950/30';
+                      ? 'bg-danger-bg hover:bg-danger-bg/70 border-danger-border text-danger-fg'
+                      : 'bg-danger-bg/40 text-slate-500 hover:bg-danger-bg/60';
                   } else if (cell?.level === 'MEDIUM') {
                     cellColor = count > 0
-                      ? 'bg-amber-950/40 hover:bg-amber-950/70 border-amber-900/60 text-amber-300'
-                      : 'bg-amber-950/15 text-slate-500 hover:bg-amber-950/30';
+                      ? 'bg-warning-bg hover:bg-warning-bg/70 border-warning-border text-warning-fg'
+                      : 'bg-warning-bg/40 text-slate-500 hover:bg-warning-bg/60';
                   } else {
                     cellColor = count > 0
                       ? 'bg-slate-900 hover:bg-slate-850 text-slate-200'
@@ -695,7 +695,7 @@ function RisksContent() {
                 onClick={() => setSelectedRiskStatus('')}
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition ${
                   selectedRiskStatus === ''
-                    ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
+                    ? 'bg-brand-bg text-brand-fg border border-brand-border'
                     : 'bg-slate-900 text-slate-400 hover:text-foreground'
                 }`}
               >
@@ -708,7 +708,7 @@ function RisksContent() {
                   onClick={() => setSelectedRiskStatus(st)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition ${
                     selectedRiskStatus === st
-                      ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
+                      ? 'bg-brand-bg text-brand-fg border border-brand-border'
                       : 'bg-slate-900 text-slate-400 hover:text-foreground'
                   }`}
                 >
@@ -734,7 +734,7 @@ function RisksContent() {
                       <div className="space-y-1.5 flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           {risk.project_code && (
-                            <span className="font-mono text-xs font-bold text-indigo-400 bg-indigo-950/80 border border-indigo-800/80 px-2 py-0.5 rounded">
+                            <span className="font-mono text-xs font-bold text-brand-fg bg-brand-bg border border-brand-border px-2 py-0.5 rounded">
                               [{risk.project_code}]
                             </span>
                           )}
@@ -784,7 +784,7 @@ function RisksContent() {
                         <button
                           type="button"
                           onClick={() => void handleDeleteRisk(risk.id)}
-                          className="p-1.5 rounded-lg border border-red-950 bg-red-950/30 text-red-400 hover:bg-red-900/50 transition"
+                          className="p-1.5 rounded-lg border border-danger-border bg-danger-bg text-danger-fg hover:bg-danger-bg/70 transition"
                           title={t('management.risksPage.deleteRiskTitle')}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -795,7 +795,7 @@ function RisksContent() {
                     {/* Mitigation Plan Box */}
                     {risk.mitigation && (
                       <div className="rounded-xl border border-slate-800/80 bg-slate-950/80 p-3 text-xs text-slate-300">
-                        <strong className="text-indigo-400 block mb-0.5 text-[11px] uppercase tracking-wider font-bold">
+                        <strong className="text-brand-fg block mb-0.5 text-[11px] uppercase tracking-wider font-bold">
                           {t('management.risksPage.mitigationPlanLabel')}
                         </strong>
                         <p className="leading-relaxed">{risk.mitigation}</p>
@@ -859,7 +859,7 @@ function RisksContent() {
                 onClick={() => setSelectedIncidentStatus('')}
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition ${
                   selectedIncidentStatus === ''
-                    ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
+                    ? 'bg-brand-bg text-brand-fg border border-brand-border'
                     : 'bg-slate-900 text-slate-400 hover:text-foreground'
                 }`}
               >
@@ -872,7 +872,7 @@ function RisksContent() {
                   onClick={() => setSelectedIncidentStatus(st)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition ${
                     selectedIncidentStatus === st
-                      ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
+                      ? 'bg-brand-bg text-brand-fg border border-brand-border'
                       : 'bg-slate-900 text-slate-400 hover:text-foreground'
                   }`}
                 >
@@ -898,7 +898,7 @@ function RisksContent() {
                       <div className="space-y-1.5 flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           {inc.project_code && (
-                            <span className="font-mono text-xs font-bold text-indigo-400 bg-indigo-950/80 border border-indigo-800/80 px-2 py-0.5 rounded">
+                            <span className="font-mono text-xs font-bold text-brand-fg bg-brand-bg border border-brand-border px-2 py-0.5 rounded">
                               [{inc.project_code}]
                             </span>
                           )}
@@ -932,10 +932,10 @@ function RisksContent() {
                         <button
                           type="button"
                           onClick={() => openConvertToLessonModal(inc)}
-                          className="inline-flex items-center gap-1.5 rounded-xl border border-amber-800/80 bg-amber-950/40 px-3 py-1.5 text-xs font-semibold text-amber-300 hover:bg-amber-900/60 transition"
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-warning-border bg-warning-bg px-3 py-1.5 text-xs font-semibold text-warning-fg hover:bg-warning-bg/70 transition"
                           title={t('management.risksPage.convertLessonTitle')}
                         >
-                          <Lightbulb className="h-3.5 w-3.5 text-amber-400" />
+                          <Lightbulb className="h-3.5 w-3.5 text-warning" />
                           <span>{t('management.risksPage.convertLessonButton')}</span>
                         </button>
 
@@ -950,7 +950,7 @@ function RisksContent() {
                         <button
                           type="button"
                           onClick={() => void handleDeleteIncident(inc.id)}
-                          className="p-1.5 rounded-lg border border-red-950 bg-red-950/30 text-red-400 hover:bg-red-900/50 transition"
+                          className="p-1.5 rounded-lg border border-danger-border bg-danger-bg text-danger-fg hover:bg-danger-bg/70 transition"
                           title={t('management.risksPage.deleteIncidentTitle')}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -961,8 +961,8 @@ function RisksContent() {
                     {/* 3-Column / 3-Box Flow: Root Cause -> Solution -> Prevention */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       {/* Box 1: Root cause */}
-                      <div className="rounded-xl border border-red-950/60 bg-red-950/20 p-3 text-xs">
-                        <strong className="text-red-400 block mb-1 font-bold text-[11px] uppercase tracking-wider">
+                      <div className="rounded-xl border border-danger-border bg-danger-bg p-3 text-xs">
+                        <strong className="text-danger-fg block mb-1 font-bold text-[11px] uppercase tracking-wider">
                           {t('management.risksPage.incidentRootCauseLabel')}
                         </strong>
                         <p className="text-slate-300 leading-relaxed">
@@ -971,8 +971,8 @@ function RisksContent() {
                       </div>
 
                       {/* Box 2: Solution */}
-                      <div className="rounded-xl border border-blue-950/60 bg-blue-950/20 p-3 text-xs">
-                        <strong className="text-blue-400 block mb-1 font-bold text-[11px] uppercase tracking-wider">
+                      <div className="rounded-xl border border-info-border bg-info-bg p-3 text-xs">
+                        <strong className="text-info-fg block mb-1 font-bold text-[11px] uppercase tracking-wider">
                           {t('management.risksPage.incidentSolutionLabel')}
                         </strong>
                         <p className="text-slate-300 leading-relaxed">
@@ -981,8 +981,8 @@ function RisksContent() {
                       </div>
 
                       {/* Box 3: Prevention */}
-                      <div className="rounded-xl border border-emerald-950/60 bg-emerald-950/20 p-3 text-xs">
-                        <strong className="text-emerald-400 block mb-1 font-bold text-[11px] uppercase tracking-wider">
+                      <div className="rounded-xl border border-success-border bg-success-bg p-3 text-xs">
+                        <strong className="text-success-fg block mb-1 font-bold text-[11px] uppercase tracking-wider">
                           {t('management.risksPage.incidentPreventionLabel')}
                         </strong>
                         <p className="text-slate-300 leading-relaxed">
@@ -1000,7 +1000,7 @@ function RisksContent() {
                           })}
                         </span>
                         {inc.resolved_at && (
-                          <span className="text-emerald-400">
+                          <span className="text-success-fg">
                             {t('management.risksPage.resolvedAt', {
                               date: new Date(inc.resolved_at).toLocaleString(i18n.language),
                             })}
@@ -1009,8 +1009,8 @@ function RisksContent() {
                       </div>
 
                       {inc.lessons_count && inc.lessons_count > 0 ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] text-amber-300 font-semibold bg-amber-950/40 px-2 py-0.5 rounded border border-amber-800/60">
-                          <CheckCircle2 className="h-3 w-3 text-amber-400" />
+                        <span className="inline-flex items-center gap-1 text-[11px] text-warning-fg font-semibold bg-warning-bg px-2 py-0.5 rounded border border-warning-border">
+                          <CheckCircle2 className="h-3 w-3 text-warning" />
                           {t('management.risksPage.lessonsCount', { count: inc.lessons_count })}
                         </span>
                       ) : null}
@@ -1040,7 +1040,7 @@ function RisksContent() {
         <form onSubmit={handleRiskSubmit} className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-slate-300 block mb-1">
-              {t('management.risksPage.relatedProject')} <span className="text-red-400">*</span>
+              {t('management.risksPage.relatedProject')} <span className="text-danger-fg">*</span>
             </label>
             <select
               value={riskFormData.project_id}
@@ -1059,7 +1059,7 @@ function RisksContent() {
 
           <div>
             <label className="text-xs font-semibold text-slate-300 block mb-1">
-              {t('management.risksPage.riskTitleLabel')} <span className="text-red-400">*</span>
+              {t('management.risksPage.riskTitleLabel')} <span className="text-danger-fg">*</span>
             </label>
             <input
               type="text"
@@ -1209,7 +1209,7 @@ function RisksContent() {
         <form onSubmit={handleIncidentSubmit} className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-slate-300 block mb-1">
-              {t('management.risksPage.relatedProject')} <span className="text-red-400">*</span>
+              {t('management.risksPage.relatedProject')} <span className="text-danger-fg">*</span>
             </label>
             <select
               value={incidentFormData.project_id}
@@ -1228,7 +1228,7 @@ function RisksContent() {
 
           <div>
             <label className="text-xs font-semibold text-slate-300 block mb-1">
-              {t('management.risksPage.incidentTitleLabel')} <span className="text-red-400">*</span>
+              {t('management.risksPage.incidentTitleLabel')} <span className="text-danger-fg">*</span>
             </label>
             <input
               type="text"
@@ -1242,7 +1242,7 @@ function RisksContent() {
 
           <div>
             <label className="text-xs font-semibold text-slate-300 block mb-1">
-              {t('management.risksPage.incidentDescLabel')} <span className="text-red-400">*</span>
+              {t('management.risksPage.incidentDescLabel')} <span className="text-danger-fg">*</span>
             </label>
             <textarea
               rows={2}
@@ -1291,7 +1291,7 @@ function RisksContent() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-red-300 block mb-1">
+            <label className="text-xs font-semibold text-danger-fg block mb-1">
               {t('management.risksPage.rootCauseLabel')}
             </label>
             <textarea
@@ -1304,7 +1304,7 @@ function RisksContent() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-blue-300 block mb-1">
+            <label className="text-xs font-semibold text-info-fg block mb-1">
               {t('management.risksPage.solutionLabel')}
             </label>
             <textarea
@@ -1317,7 +1317,7 @@ function RisksContent() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-emerald-300 block mb-1">
+            <label className="text-xs font-semibold text-success-fg block mb-1">
               {t('management.risksPage.preventionLabel')}
             </label>
             <textarea
@@ -1377,8 +1377,8 @@ function RisksContent() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-amber-300 block mb-1">
-              {t('management.risksPage.convertLessonLabel')} <span className="text-red-400">*</span>
+            <label className="text-xs font-semibold text-warning-fg block mb-1">
+              {t('management.risksPage.convertLessonLabel')} <span className="text-danger-fg">*</span>
             </label>
             <textarea
               rows={3}
@@ -1391,8 +1391,8 @@ function RisksContent() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-emerald-300 block mb-1">
-              {t('management.risksPage.convertActionLabel')} <span className="text-red-400">*</span>
+            <label className="text-xs font-semibold text-success-fg block mb-1">
+              {t('management.risksPage.convertActionLabel')} <span className="text-danger-fg">*</span>
             </label>
             <textarea
               rows={2}

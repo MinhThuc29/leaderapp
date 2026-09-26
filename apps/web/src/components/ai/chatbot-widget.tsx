@@ -144,30 +144,30 @@ export function ChatbotWidget() {
       {/* Chatbot Window */}
       {isOpen && (
         <div
-          className={`fixed bottom-6 right-6 z-50 w-[420px] max-w-[calc(100vw-2rem)] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl ring-1 ring-black/10 dark:ring-white/10 flex flex-col overflow-hidden transition-all duration-200 animate-in fade-in-0 slide-in-from-bottom-4 ${
+          className={`fixed bottom-6 right-6 z-50 w-[420px] max-w-[calc(100vw-2rem)] rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl ring-1 ring-white/10 flex flex-col overflow-hidden transition-all duration-200 animate-in fade-in-0 slide-in-from-bottom-4 ${
             isMinimized ? 'h-14' : 'h-[580px] max-h-[calc(100vh-5rem)]'
           }`}
         >
           {/* Header */}
-          <div className="p-3.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex items-center justify-between shrink-0 select-none">
+          <div className="p-3.5 border-b border-slate-800 bg-slate-950 flex items-center justify-between shrink-0 select-none">
             <div className="flex items-center gap-2.5">
               {/* Bot Avatar */}
               <div className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/20 ring-1 ring-white/10">
                 <Bot className="h-4 w-4" />
-                <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
+                <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-slate-900" />
               </div>
 
               <div>
                 <div className="flex items-center gap-1.5">
                   <h3 className="text-xs font-bold text-slate-900 dark:text-foreground flex items-center gap-1">
                     LeaderOS Copilot
-                    <Sparkles className="h-3 w-3 text-indigo-500 dark:text-indigo-400" />
+                    <Sparkles className="h-3 w-3 text-brand" />
                   </h3>
-                  <span className="rounded bg-indigo-50 dark:bg-indigo-500/15 px-1.5 py-0.2 text-[9px] font-bold text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/25 uppercase">
+                  <span className="rounded bg-brand-bg px-1.5 py-0.2 text-[9px] font-bold text-brand-fg border border-brand-border uppercase">
                     Preview UI
                   </span>
                 </div>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400">Trợ lý Kỹ thuật & Quản trị Lãnh đạo</p>
+                <p className="text-[10px] text-slate-400">Trợ lý Kỹ thuật & Quản trị Lãnh đạo</p>
               </div>
             </div>
 
@@ -206,10 +206,10 @@ export function ChatbotWidget() {
           {!isMinimized && (
             <>
               {/* Message Feed */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs scrollbar-thin bg-slate-50/40 dark:bg-slate-900">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs scrollbar-thin bg-slate-900">
                 {/* Notice Pill */}
-                <div className="rounded-xl border border-indigo-200 dark:border-indigo-500/25 bg-indigo-50 dark:bg-indigo-500/10 p-2.5 text-[11px] text-indigo-700 dark:text-indigo-300 flex items-start gap-2">
-                  <Info className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-400 mt-0.5" />
+                <div className="rounded-xl border border-brand-border bg-brand-bg p-2.5 text-[11px] text-brand-fg flex items-start gap-2">
+                  <Info className="h-4 w-4 shrink-0 text-brand mt-0.5" />
                   <div>
                     <span className="font-semibold">Chế độ xem trước giao diện:</span> Giao diện Chatbot đã sẵn sàng; mô hình AI trả lời tự động bên trong chưa được liên kết.
                   </div>
@@ -224,7 +224,7 @@ export function ChatbotWidget() {
                       className={`flex gap-2.5 ${isUser ? 'justify-end' : 'justify-start'}`}
                     >
                       {!isUser && (
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30 mt-0.5">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-bg text-brand-fg border border-brand-border mt-0.5">
                           <Bot className="h-3.5 w-3.5" />
                         </div>
                       )}
@@ -233,7 +233,7 @@ export function ChatbotWidget() {
                         className={`max-w-[85%] rounded-2xl p-3 leading-relaxed shadow-sm ${
                           isUser
                             ? 'bg-indigo-600 text-white rounded-br-none'
-                            : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/60 rounded-bl-none shadow-sm'
+                            : 'bg-slate-800 text-slate-200 border border-slate-700/60 rounded-bl-none shadow-sm'
                         }`}
                       >
                         <div className="whitespace-pre-line text-xs font-normal">
@@ -254,10 +254,10 @@ export function ChatbotWidget() {
                 {/* Simulated typing indicator */}
                 {isTyping && (
                   <div className="flex items-center gap-2 text-slate-400 text-xs">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-bg text-brand-fg border border-brand-border">
                       <Bot className="h-3.5 w-3.5" />
                     </div>
-                    <div className="rounded-2xl rounded-bl-none bg-white dark:bg-slate-800 px-3.5 py-2.5 border border-slate-200 dark:border-slate-700/60 flex items-center gap-1.5 shadow-sm">
+                    <div className="rounded-2xl rounded-bl-none bg-slate-800 px-3.5 py-2.5 border border-slate-700/60 flex items-center gap-1.5 shadow-sm">
                       <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-bounce" />
                       <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-bounce [animation-delay:0.2s]" />
                       <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-bounce [animation-delay:0.4s]" />
@@ -269,14 +269,14 @@ export function ChatbotWidget() {
               </div>
 
               {/* Prompt Suggestions */}
-              <div className="px-3 py-2 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40">
+              <div className="px-3 py-2 border-t border-slate-800 bg-slate-950/40">
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
                   {SUGGESTED_PROMPTS.map((prompt) => (
                     <button
                       key={prompt}
                       type="button"
                       onClick={() => handleSendMessage(prompt)}
-                      className="whitespace-nowrap rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 px-2.5 py-1 text-[10px] font-medium text-slate-700 dark:text-slate-300 hover:border-indigo-500 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-indigo-600 dark:hover:text-white transition shrink-0 shadow-sm"
+                      className="whitespace-nowrap rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1 text-[10px] font-medium text-slate-300 hover:border-indigo-500 hover:bg-slate-750 hover:text-white transition shrink-0 shadow-sm"
                     >
                       {prompt}
                     </button>
@@ -285,7 +285,7 @@ export function ChatbotWidget() {
               </div>
 
               {/* Input Area */}
-              <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              <div className="p-3 border-t border-slate-800 bg-slate-950">
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -300,7 +300,7 @@ export function ChatbotWidget() {
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       placeholder="Hỏi LeaderOS Copilot về dự án, task, cuộc họp..."
-                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 pl-3.5 pr-8 py-2.5 text-xs text-slate-900 dark:text-foreground placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
+                      className="w-full rounded-xl border border-slate-700 bg-slate-900 pl-3.5 pr-8 py-2.5 text-xs text-foreground placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
                     />
                     <button
                       type="button"

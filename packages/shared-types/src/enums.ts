@@ -143,3 +143,21 @@ export const NeedAttentionSeverity = {
 export type NeedAttentionSeverity =
   (typeof NeedAttentionSeverity)[keyof typeof NeedAttentionSeverity];
 
+export const MeetingStatus = {
+  UPCOMING: 'UPCOMING',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+} as const;
+export type MeetingStatus = (typeof MeetingStatus)[keyof typeof MeetingStatus];
+
+export const NotificationType = {
+  OVERDUE: 'OVERDUE',
+  MEETING: 'MEETING',
+  RISK: 'RISK',
+  DECISION: 'DECISION',
+  SYSTEM: 'SYSTEM',
+} as const;
+export type NotificationType =
+  (typeof NotificationType)[keyof typeof NotificationType];
+

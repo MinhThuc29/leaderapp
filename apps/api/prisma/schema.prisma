@@ -123,6 +123,21 @@ enum ReminderEntity {
   DECISION_REVIEW
 }
 
+enum MeetingStatus {
+  UPCOMING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  OVERDUE
+  MEETING
+  RISK
+  DECISION
+  SYSTEM
+}
+
 // ==============================================================================
 // 1. users: Account Leader duy nhất (User = Leader)
 // ==============================================================================
@@ -150,6 +165,8 @@ model User {
   risks           Risk[]
   incidents       Incident[]
   decisions       Decision[]
+  meetings        Meeting[]
+  notifications   Notification[]
 
   @@map("users")
 }
@@ -177,6 +194,7 @@ model Member {
   risks           Risk[]
   notes_related   Note[]
   follow_ups      FollowUp[]
+  meetings        Meeting[]
 
   @@map("members")
 }
@@ -215,6 +233,7 @@ model Project {
   lessons_learned            LessonLearned[]
   decisions                  Decision[]
   follow_ups                 FollowUp[]
+  meetings                   Meeting[]
 
   @@map("projects")
 }
@@ -307,6 +326,7 @@ model Task {
   owner               User                @relation(fields: [owner_id], references: [id])
   task_status_history TaskStatusHistory[]
   weekly_plan_tasks   WeeklyPlanTask[]
+  notifications       Notification[]
 
   @@map("tasks")
 }
@@ -538,6 +558,7 @@ model FollowUp {
   project Project? @relation(fields: [project_id], references: [id], onDelete: SetNull)
   member  Member?  @relation(fields: [member_id], references: [id], onDelete: SetNull)
   owner   User     @relation(fields: [owner_id], references: [id])
+  notifications Notification[]
 
   @@map("follow_ups")
 }
@@ -581,9 +602,10 @@ model Risk {
   updated_at      DateTime    @updatedAt
   deleted_at      DateTime?
 
-  project      Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
-  owner_member Member? @relation(fields: [owner_member_id], references: [id], onDelete: SetNull)
-  owner        User    @relation(fields: [owner_id], references: [id])
+  project       Project        @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  owner_member  Member?        @relation(fields: [owner_member_id], references: [id], onDelete: SetNull)
+  owner         User           @relation(fields: [owner_id], references: [id])
+  notifications Notification[]
 
   @@map("risks")
 }
@@ -636,10 +658,76 @@ model Decision {
   updated_at         DateTime       @updatedAt
   deleted_at         DateTime?
 
-  project Project? @relation(fields: [project_id], references: [id], onDelete: SetNull)
-  owner   User     @relation(fields: [owner_id], references: [id])
+  project       Project?       @relation(fields: [project_id], references: [id], onDelete: SetNull)
+  owner         User           @relation(fields: [owner_id], references: [id])
+  notifications Notification[]
 
   @@map("decisions")
+}
+
+// ==============================================================================
+// 22. meetings: Cuộc họp / 1-on-1 / Bàn bạc kỹ thuật
+// ==============================================================================
+model Meeting {
+  id          String        @id @default(uuid()) @db.Uuid
+  title       String
+  description String?       @db.Text
+  location    String?
+  meeting_url String?
+  start_time  DateTime
+  end_time    DateTime?
+  status      MeetingStatus @default(UPCOMING)
+  agenda      String?       @db.Text
+  notes       String?       @db.Text
+  project_id  String?       @db.Uuid
+  member_id   String?       @db.Uuid
+  owner_id    String        @db.Uuid
+  created_at  DateTime      @default(now())
+  updated_at  DateTime      @updatedAt
+  deleted_at  DateTime?
+
+  project       Project?       @relation(fields: [project_id], references: [id], onDelete: SetNull)
+  member        Member?        @relation(fields: [member_id], references: [id], onDelete: SetNull)
+  owner         User           @relation(fields: [owner_id], references: [id])
+  notifications Notification[]
+
+  @@map("meetings")
+}
+
+// ==============================================================================
+// 23. notifications: Trung tâm thông báo & Cảnh báo Need-Attention
+// ==============================================================================
+model Notification {
+  id           String           @id @default(uuid()) @db.Uuid
+  user_id      String           @db.Uuid
+  type         NotificationType
+  title        String
+  description  String           @db.Text
+  priority     Priority         @default(MEDIUM)
+  read         Boolean          @default(false)
+  action_url   String?
+  action_label String?
+  time_hint    String?
+
+  entity_type  String?
+  task_id      String?          @db.Uuid
+  meeting_id   String?          @db.Uuid
+  risk_id      String?          @db.Uuid
+  decision_id  String?          @db.Uuid
+  follow_up_id String?          @db.Uuid
+
+  created_at   DateTime         @default(now())
+  updated_at   DateTime         @updatedAt
+
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  task      Task?     @relation(fields: [task_id], references: [id], onDelete: SetNull)
+  meeting   Meeting?  @relation(fields: [meeting_id], references: [id], onDelete: SetNull)
+  risk      Risk?     @relation(fields: [risk_id], references: [id], onDelete: SetNull)
+  decision  Decision? @relation(fields: [decision_id], references: [id], onDelete: SetNull)
+  follow_up FollowUp? @relation(fields: [follow_up_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id, read])
+  @@map("notifications")
 }
 
 // ==============================================================================

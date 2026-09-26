@@ -31,7 +31,7 @@ export function ModeToggle() {
     <button
       type="button"
       onClick={handleToggle}
-      className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-800/80 hover:text-foreground transition-all duration-200 active:scale-95 focus:outline-none"
+      className="flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-foreground transition-all duration-200 active:scale-95 focus:outline-none"
       title={isDark ? t('theme.light') : t('theme.dark')}
       aria-label={isDark ? t('theme.light') : t('theme.dark')}
     >

@@ -124,6 +124,8 @@ import {
   RiskStatus,
   IncidentStatus,
   DecisionStatus,
+  MeetingStatus,
+  NotificationType,
 } from './enums';
 
 export interface ProjectMemberDto {
@@ -882,6 +884,93 @@ export interface UpdateDecisionInput {
 export interface ReviewDecisionInput {
   actual_result: string;
   notes?: string | undefined;
+}
+
+// ==============================================================================
+// Meetings Types
+// ==============================================================================
+export interface MeetingDto {
+  id: string;
+  title: string;
+  description?: string | null | undefined;
+  location?: string | null | undefined;
+  meeting_url?: string | null | undefined;
+  start_time: string;
+  end_time?: string | null | undefined;
+  status: MeetingStatus;
+  agenda?: string | null | undefined;
+  notes?: string | null | undefined;
+  project_id?: string | null | undefined;
+  member_id?: string | null | undefined;
+  owner_id: string;
+  created_at: string;
+  updated_at: string;
+  project?: { id: string; name: string; code: string } | undefined;
+  member?: MemberDto | undefined;
+}
+
+export interface CreateMeetingInput {
+  title: string;
+  description?: string | undefined;
+  location?: string | undefined;
+  meeting_url?: string | undefined;
+  start_time: string;
+  end_time?: string | undefined;
+  status?: MeetingStatus | undefined;
+  agenda?: string | undefined;
+  notes?: string | undefined;
+  project_id?: string | undefined;
+  member_id?: string | undefined;
+}
+
+export interface UpdateMeetingInput {
+  title?: string | undefined;
+  description?: string | null | undefined;
+  location?: string | null | undefined;
+  meeting_url?: string | null | undefined;
+  start_time?: string | undefined;
+  end_time?: string | null | undefined;
+  status?: MeetingStatus | undefined;
+  agenda?: string | null | undefined;
+  notes?: string | null | undefined;
+  project_id?: string | null | undefined;
+  member_id?: string | null | undefined;
+}
+
+// ==============================================================================
+// Notifications Types
+// ==============================================================================
+export interface NotificationDto {
+  id: string;
+  user_id: string;
+  type: 'overdue' | 'meeting' | 'risk' | 'decision' | 'system';
+  title: string;
+  description: string;
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  read: boolean;
+  action_url?: string | null | undefined;
+  action_label?: string | null | undefined;
+  time_hint?: string | null | undefined;
+  entity_type?: string | null | undefined;
+  task_id?: string | null | undefined;
+  meeting_id?: string | null | undefined;
+  risk_id?: string | null | undefined;
+  decision_id?: string | null | undefined;
+  follow_up_id?: string | null | undefined;
+  created_at: string;
+  updated_at: string;
+  meeting?: MeetingDto | null | undefined;
+  task?: TaskDto | null | undefined;
+}
+
+export interface NotificationListResponse {
+  items: NotificationDto[];
+  stats: {
+    total: number;
+    unread: number;
+    overdue: number;
+    meeting: number;
+  };
 }
 
 

@@ -582,10 +582,10 @@ function LearningContent() {
             onClick={() => setIsModalOpen(false)}
             aria-hidden="true"
           />
-          <div className="relative w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl flex flex-col max-h-[92vh] z-10">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-6 py-4">
-              <h2 className="text-base font-bold text-slate-900 dark:text-foreground flex items-center gap-2">
-                <GraduationCap className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
+          <div className="relative w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl flex flex-col max-h-[92vh] z-10">
+            <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                <GraduationCap className="h-4 w-4 text-brand" />
                 <span>
                   {editingItem
                     ? t('knowledge.learningPage.modalEditTitle')

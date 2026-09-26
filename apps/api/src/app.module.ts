@@ -17,6 +17,8 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { RisksModule } from './modules/risks/risks.module';
 import { IncidentsModule } from './modules/incidents/incidents.module';
 import { DecisionsModule } from './modules/decisions/decisions.module';
+import { MeetingsModule } from './modules/meetings/meetings.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -41,6 +43,8 @@ import { DecisionsModule } from './modules/decisions/decisions.module';
     RisksModule,
     IncidentsModule,
     DecisionsModule,
+    MeetingsModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

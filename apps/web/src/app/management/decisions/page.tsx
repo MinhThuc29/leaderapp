@@ -27,9 +27,9 @@ import {
 } from 'lucide-react';
 
 const STATUS_MAP: Record<DecisionStatus, { badge: string }> = {
-  DECIDED: { badge: 'bg-blue-950 text-blue-400 border-blue-800' },
-  REVIEW_PENDING: { badge: 'bg-amber-950 text-amber-400 border-amber-800 animate-pulse' },
-  REVIEWED: { badge: 'bg-emerald-950 text-emerald-400 border-emerald-800' },
+  DECIDED: { badge: 'bg-info-bg text-info-fg border-info-border' },
+  REVIEW_PENDING: { badge: 'bg-warning-bg text-warning-fg border-warning-border animate-pulse' },
+  REVIEWED: { badge: 'bg-success-bg text-success-fg border-success-border' },
 };
 
 function formatDate(dateStr: string | null | undefined): string {
@@ -256,7 +256,7 @@ function DecisionsContent() {
   return (
     <div className="space-y-8">
       {error && (
-        <div className="rounded-xl border border-red-800 bg-red-950/40 p-4 text-sm text-red-300">
+        <div className="rounded-xl border border-danger-border bg-danger-bg p-4 text-sm text-danger-fg">
           {error}
         </div>
       )}
@@ -270,36 +270,36 @@ function DecisionsContent() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-blue-900/60 bg-blue-950/20 p-4">
-          <span className="text-xs text-blue-300 block font-medium flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5 text-blue-400" />
+        <div className="rounded-2xl border border-info-border bg-info-bg p-4">
+          <span className="text-xs text-info-fg block font-medium flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 text-info" />
             {t('management.decisionsPage.statDecided')}
           </span>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-blue-400">{decidedCount}</span>
-            <span className="text-xs text-blue-300/70">{t('management.decisionsPage.statDecidedUnit')}</span>
+            <span className="text-2xl font-bold font-mono text-info-fg">{decidedCount}</span>
+            <span className="text-xs text-info-fg/70">{t('management.decisionsPage.statDecidedUnit')}</span>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-amber-900/60 bg-amber-950/20 p-4">
-          <span className="text-xs text-amber-300 block font-medium flex items-center gap-1.5">
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
+        <div className="rounded-2xl border border-warning-border bg-warning-bg p-4">
+          <span className="text-xs text-warning-fg block font-medium flex items-center gap-1.5">
+            <AlertTriangle className="h-3.5 w-3.5 text-warning" />
             {t('management.decisionsPage.statReviewPending')}
           </span>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-amber-400">{reviewPendingCount}</span>
-            <span className="text-xs text-amber-300/70">{t('management.decisionsPage.statReviewPendingUnit')}</span>
+            <span className="text-2xl font-bold font-mono text-warning-fg">{reviewPendingCount}</span>
+            <span className="text-xs text-warning-fg/70">{t('management.decisionsPage.statReviewPendingUnit')}</span>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-emerald-900/60 bg-emerald-950/20 p-4">
-          <span className="text-xs text-emerald-300 block font-medium flex items-center gap-1.5">
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+        <div className="rounded-2xl border border-success-border bg-success-bg p-4">
+          <span className="text-xs text-success-fg block font-medium flex items-center gap-1.5">
+            <CheckCircle2 className="h-3.5 w-3.5 text-success" />
             {t('management.decisionsPage.statReviewed')}
           </span>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-emerald-400">{reviewedCount}</span>
-            <span className="text-xs text-emerald-300/70">{t('management.decisionsPage.statReviewedUnit')}</span>
+            <span className="text-2xl font-bold font-mono text-success-fg">{reviewedCount}</span>
+            <span className="text-xs text-success-fg/70">{t('management.decisionsPage.statReviewedUnit')}</span>
           </div>
         </div>
       </div>
@@ -392,10 +392,10 @@ function DecisionsContent() {
                 <div
                   className={`absolute -left-6 sm:-left-8 top-1.5 flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full border-2 bg-slate-950 transition ${
                     dec.status === 'REVIEWED'
-                      ? 'border-emerald-500 text-emerald-400'
+                      ? 'border-success text-success-fg'
                       : isPendingReview
-                      ? 'border-amber-500 text-amber-400 animate-pulse'
-                      : 'border-indigo-500 text-indigo-400'
+                      ? 'border-warning text-warning-fg animate-pulse'
+                      : 'border-brand text-brand-fg'
                   }`}
                 >
                   {dec.status === 'REVIEWED' ? (
@@ -411,9 +411,9 @@ function DecisionsContent() {
                 <div
                   className={`rounded-2xl border p-5 sm:p-6 shadow-sm transition space-y-4 ${
                     isPendingReview
-                      ? 'border-amber-900/70 bg-gradient-to-br from-amber-950/20 via-slate-900 to-slate-900'
+                      ? 'border-warning-border bg-warning-bg'
                       : dec.status === 'REVIEWED'
-                      ? 'border-emerald-950/70 bg-slate-900/90'
+                      ? 'border-success-border bg-slate-900/90'
                       : 'border-slate-800 bg-slate-900/90 hover:border-slate-700'
                   }`}
                 >
@@ -425,7 +425,7 @@ function DecisionsContent() {
                           {formatDate(dec.decision_date)}
                         </span>
                         {dec.project_code && (
-                          <span className="font-mono text-xs font-bold text-indigo-400 bg-indigo-950/80 border border-indigo-800/80 px-2 py-0.5 rounded">
+                          <span className="font-mono text-xs font-bold text-brand-fg bg-brand-bg border border-brand-border px-2 py-0.5 rounded">
                             [{dec.project_code}]
                           </span>
                         )}
@@ -449,10 +449,10 @@ function DecisionsContent() {
                         <button
                           type="button"
                           onClick={() => openReviewModal(dec)}
-                          className="inline-flex items-center gap-1.5 rounded-xl border border-amber-800/80 bg-amber-950/50 px-3 py-1.5 text-xs font-semibold text-amber-300 hover:bg-amber-900/70 transition"
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-warning-border bg-warning-bg px-3 py-1.5 text-xs font-semibold text-warning-fg hover:bg-warning-bg/70 transition"
                           title={t('management.decisionsPage.reviewButtonTitle')}
                         >
-                          <FileCheck className="h-3.5 w-3.5 text-amber-400" />
+                          <FileCheck className="h-3.5 w-3.5 text-warning" />
                           <span>{t('management.decisionsPage.reviewButton')}</span>
                         </button>
                       )}
@@ -468,7 +468,7 @@ function DecisionsContent() {
                       <button
                         type="button"
                         onClick={() => void handleDeleteDecision(dec.id)}
-                        className="p-1.5 rounded-lg border border-red-950 bg-red-950/30 text-red-400 hover:bg-red-900/50 transition"
+                        className="p-1.5 rounded-lg border border-danger-border bg-danger-bg text-danger-fg hover:bg-danger-bg/70 transition"
                         title={t('management.decisionsPage.deleteTitle')}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -498,10 +498,10 @@ function DecisionsContent() {
                   </div>
 
                   {/* Chosen Option Box (Highlight) */}
-                  <div className="rounded-xl border border-indigo-800/80 bg-indigo-950/30 p-4 space-y-2 text-xs">
+                  <div className="rounded-xl border border-brand-border bg-brand-bg p-4 space-y-2 text-xs">
                     <div className="flex items-center gap-2">
-                      <Award className="h-4 w-4 text-indigo-400" />
-                      <strong className="text-indigo-300 text-xs font-bold uppercase tracking-wider">
+                      <Award className="h-4 w-4 text-brand" />
+                      <strong className="text-brand-fg text-xs font-bold uppercase tracking-wider">
                         {t('management.decisionsPage.chosenLabel')}
                       </strong>
                     </div>
@@ -510,7 +510,7 @@ function DecisionsContent() {
                       {dec.decision}
                     </p>
 
-                    <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs border-t border-indigo-900/40 mt-2">
+                    <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs border-t border-brand-border mt-2">
                       <div>
                         <span className="text-slate-400 font-semibold block mb-0.5">
                           {t('management.decisionsPage.rationaleLabel')}
@@ -529,11 +529,11 @@ function DecisionsContent() {
 
                   {/* Review Banner or Review Result */}
                   {dec.actual_result ? (
-                    <div className="rounded-xl border border-emerald-900/70 bg-emerald-950/20 p-4 space-y-1.5 text-xs">
+                    <div className="rounded-xl border border-success-border bg-success-bg p-4 space-y-1.5 text-xs">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                          <strong className="text-emerald-300 font-bold uppercase tracking-wider text-[11px]">
+                          <CheckCircle2 className="h-4 w-4 text-success" />
+                          <strong className="text-success-fg font-bold uppercase tracking-wider text-[11px]">
                             {t('management.decisionsPage.actualResultLabel')}
                           </strong>
                         </div>
@@ -550,11 +550,11 @@ function DecisionsContent() {
                       </p>
                     </div>
                   ) : isPendingReview ? (
-                    <div className="rounded-xl border border-amber-900/60 bg-amber-950/30 p-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
+                    <div className="rounded-xl border border-warning-border bg-warning-bg p-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
                       <div className="flex items-center gap-2.5">
-                        <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0" />
+                        <AlertTriangle className="h-5 w-5 text-warning shrink-0" />
                         <div>
-                          <strong className="text-amber-300 font-semibold block">
+                          <strong className="text-warning-fg font-semibold block">
                             {t('management.decisionsPage.reviewDueAlert')}
                           </strong>
                           <p className="text-slate-400 text-[11px] mt-0.5">
@@ -608,7 +608,7 @@ function DecisionsContent() {
         <form onSubmit={handleDecisionSubmit} className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-slate-300 block mb-1">
-              {t('management.decisionsPage.titleLabel')} <span className="text-red-400">*</span>
+              {t('management.decisionsPage.titleLabel')} <span className="text-danger-fg">*</span>
             </label>
             <input
               type="text"
@@ -654,7 +654,7 @@ function DecisionsContent() {
 
           <div>
             <label className="text-xs font-semibold text-slate-300 block mb-1">
-              {t('management.decisionsPage.contextFieldLabel')} <span className="text-red-400">*</span>
+              {t('management.decisionsPage.contextFieldLabel')} <span className="text-danger-fg">*</span>
             </label>
             <textarea
               rows={2}
@@ -668,7 +668,7 @@ function DecisionsContent() {
 
           <div>
             <label className="text-xs font-semibold text-slate-300 block mb-1">
-              {t('management.decisionsPage.optionsFieldLabel')} <span className="text-red-400">*</span>
+              {t('management.decisionsPage.optionsFieldLabel')} <span className="text-danger-fg">*</span>
             </label>
             <textarea
               rows={3}
@@ -680,9 +680,9 @@ function DecisionsContent() {
             />
           </div>
 
-          <div className="rounded-xl border border-indigo-900/60 bg-indigo-950/20 p-3.5 space-y-3">
+          <div className="rounded-xl border border-brand-border bg-brand-bg p-3.5 space-y-3">
             <div>
-              <label className="text-xs font-semibold text-indigo-300 block mb-1">
+              <label className="text-xs font-semibold text-brand-fg block mb-1">
                 {t('management.decisionsPage.chosenFieldLabel')}
               </label>
               <input
@@ -695,7 +695,7 @@ function DecisionsContent() {
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-indigo-300 block mb-1">
+              <label className="text-xs font-semibold text-brand-fg block mb-1">
                 {t('management.decisionsPage.rationaleFieldLabel')}
               </label>
               <textarea
@@ -708,7 +708,7 @@ function DecisionsContent() {
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-indigo-300 block mb-1">
+              <label className="text-xs font-semibold text-brand-fg block mb-1">
                 {t('management.decisionsPage.expectedFieldLabel')}
               </label>
               <textarea
@@ -781,8 +781,8 @@ function DecisionsContent() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-emerald-300 block mb-1">
-              {t('management.decisionsPage.actualResultFieldLabel')} <span className="text-red-400">*</span>
+            <label className="text-xs font-semibold text-success-fg block mb-1">
+              {t('management.decisionsPage.actualResultFieldLabel')} <span className="text-danger-fg">*</span>
             </label>
             <textarea
               rows={4}

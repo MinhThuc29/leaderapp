@@ -736,8 +736,8 @@ function WeeklyContent() {
             onClick={() => setShowCreatePlanModal(false)}
             aria-hidden="true"
           />
-          <div className="relative w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl z-10">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+          <div className="relative w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl z-10">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
               <h2 className="text-lg font-bold text-slate-900 dark:text-foreground">
                 {editingPlan ? t('weekly.modalEditTitle') : t('weekly.modalCreateTitle')}
               </h2>
@@ -856,13 +856,13 @@ function WeeklyContent() {
             onClick={() => setAssigningTaskPlan(null)}
             aria-hidden="true"
           />
-          <div className="relative w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl z-10">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+          <div className="relative w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl z-10">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-foreground">
                   {t('weekly.assignModalTitle')}
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-400">
                   {t('weekly.assignModalProject', {
                     code: assigningTaskPlan.project_code,
                     name: assigningTaskPlan.project_name,
@@ -959,13 +959,13 @@ function WeeklyContent() {
             onClick={() => setReviewingPlan(null)}
             aria-hidden="true"
           />
-          <div className="relative w-full max-w-xl rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl z-10">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+          <div className="relative w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl z-10">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-foreground">
                   {t('weekly.reviewModalTitle')}
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-400">
                   {t('weekly.reviewModalMeta', {
                     code: reviewingPlan.project_code,
                     name: reviewingPlan.project_name,
